@@ -1,0 +1,33 @@
+{
+  "state": [
+    "start",
+    "number",
+    "note",
+    "token",
+    "number_operator_mid",
+    "single_operator_mid",
+    "double_operator_mid",
+    "float_mid",
+    "float",
+    "integar",
+    "token_mid",
+    "string_mid",
+    "single_operator",
+    "double_operator",
+    "string"
+  ],
+  "star": "start",
+  "name": "Lex",
+  "table": {
+    "start": [
+      [ "\"", "string_mid" ],
+      [ "a", "z", "token_mid" ],
+      [ "A", "Z", "token_mid" ],
+      [ "0", "9", "number" ],
+      [ "_", "number" ],
+      [ ".", "float_mid" ],
+      [ "#", "note" ],
+      [ ""]
+    ]
+  }
+}

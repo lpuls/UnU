@@ -1,0 +1,1 @@
+{"name":"action","star":"action1","state":["action1","action2","action3","skill0","skill1","skill2"],"table":{"action1":[[0,"action2","C"],[1,"action3","A","B"],[2,"skill0","0","9"]],"action2":[[0,"action1","D"],[1,"action2","Z","X"],[2,"skill1","0","9"]],"action3":[[0,"action2","K"],[1,"action3","L","M"],[2,"skill2","0","9"]],"skill0":[],"skill1":[],"skill2":[]}}
