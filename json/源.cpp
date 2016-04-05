@@ -13,9 +13,6 @@
 
 #include "json\json.h"
 
-#include "Test\TestStateMachine.h"
-
-using namespace TestMoudle;
 using namespace XpLib;
 using namespace UnUCompiler;
 
@@ -29,16 +26,19 @@ int main()
 	Toolsets::getInstance()->addSwitch("KeyWordsTable");
 	Toolsets::getInstance()->addSwitch("LEX");
 
-	StateTable stateTable("Jsons/action.json");
-	auto state = stateTable["action1"];
-	MAINLOG(state->getStateByInput("C")->getState());
-	MAINLOG(state->getStateByInput("A")->getState());
-	MAINLOG(state->getStateByInput("B")->getState());
-	for (int i = 0; i < 10; i++)
+	std::vector<std::string> inputList;
+	std::string code = "i = 10086 + 123456 / 1.234 * 852;";
+	for (auto item : code)
 	{
-		MAINLOG(state->getStateByInput(Toolsets::intToStr(i))->getState());
+		inputList.push_back(Toolsets::charToStr(item));
 	}
+	inputList.push_back(" ");
 
+
+	Lex sm("Jsons/Lex.json");
+	sm.setInputList(&inputList);
+	sm.run();
+	MAINLOG(sm.getCurrent()->getState());
 
 	system("pause");
 	return 0;

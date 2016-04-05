@@ -2,7 +2,6 @@
 
 #include "Lex.h"
 #include "../UnUCompile.h"
-#include "../UnUCompilerPublicVar.h"
 
 using namespace std;
 using namespace UnUCompiler;
@@ -23,20 +22,36 @@ UnUCompiler::Lex::~Lex()
 	StateMachine::~StateMachine();
 }
 
-int UnUCompiler::Lex::_entryEvent(std::string input)
+int UnUCompiler::Lex::entry__()
 {
-	return 0;
+	return StateMachine::entry__();
 }
 
-int UnUCompiler::Lex::_quitEvent(std::string input)
+int UnUCompiler::Lex::quit__()
 {
-	return 0;
+	// 转移为零，则说明为结端节点
+	if (0 == this->_current->getTransitionTotal())
+	{
+		if (" " != this->_input)
+			this->_location -= 1;
+		LEXLOG("终端节点：" + this->_current->getState() + " 节点词汇：" + this->__currentWord + "\n");
+		// 将记录下来的字符串转化为词汇
+		Word *word = nullptr;
+		auto result = this->__keyWordsTable.at(this->__currentWord);
+		if (UnUCompiler::ERROR == result)
+			word = new Word(this->__currentWord, this->_current->getState());
+		else
+			word = new Word(this->__currentWord, result);
+		this->__iterator.push(word);
+		this->__currentWord = "";
+		this->_current = this->_stateTable->getStarState();
+	}
+	else
+	{
+		this->__currentWord += this->_input;
+	}
+	return StateMachine::quit__();
 }
-
-int UnUCompiler::Lex::_transitionEvent(std::string input)
-{
-	return 0;
-}									 
 
 Lex * UnUCompiler::Lex::getInstance()
 {

@@ -2,11 +2,60 @@
 
 #define STATELOG(var) Toolsets::getInstance()->log(var, "StateMachine");
 
+int XpLib::StateMachine::entry__()
+{
+	STATELOG(this->_current->getState())
+	return this->CONTINUE;
+}
+
+int XpLib::StateMachine::quit__()
+{
+	STATELOG(this->_current->getState())
+	return this->CONTINUE;
+}
+
+int XpLib::StateMachine::transition__()
+{
+	// 检测是否有正确的输入值
+	if ("" == this->_input)
+		return this->TRANSITION_NULL_INPUT;
+	// 进行转移
+	auto next = this->_current->getStateByInput(this->_input);
+	if (nullptr != next)
+	{			 
+		this->_current = next;
+		return this->TRANSITION_NORMAL;
+	}
+	return this->TRANSITION_ERROR;
+}
+
+int XpLib::StateMachine::input_()
+{
+	// 检测输入列表是否为空
+	if (nullptr == this->_inputList)
+		return this->INPUT_NULL;
+	// 检测是否在输入列表读取范围内
+	if (this->_location >= 0 && this->_location < this->_inputList->size())
+	{
+		this->_input = this->_inputList->at(this->_location);
+		this->_location += 1;
+		// 检测是否读取完成，若读取完成则跳结束自动机
+		if (this->_location == this->_inputList->size())
+			return this->INPUT_OVER;
+		return this->INPUT_NORMAL;
+	}
+	// 读取位置超出可读取长度
+	return StateMachine::INPUT_OVERFLOW;
+}
+
 XpLib::StateMachine::StateMachine(std::string path)
 {
 	this->_previousState = nullptr;
 	this->_stateTable = new StateTable(path);
 	this->_current = this->_stateTable->getStarState();
+	this->_inputList = nullptr;
+	this->_input = "";
+	this->_location = 0;
 }
 
 XpLib::StateMachine::~StateMachine()
@@ -14,105 +63,40 @@ XpLib::StateMachine::~StateMachine()
 	SAFE_DELETE(this->_current);
 }
 
-bool XpLib::StateMachine::run(std::vector<std::string> inputList)
+bool XpLib::StateMachine::run()
 {
-	int inputLocation = 0;
-	std::string item = inputList[inputLocation++];
-	int result = StateMachine::NEXT;
-	std::function<int(std::string)> next = std::bind(&StateMachine::entry__, this, std::placeholders::_1);
-	result = this->entry__(item);
-	// 依次读取每一个输入
-	do
+	bool isContinue = true;
+	int result = -1;
+	while (isContinue)
 	{
-		// 根据结果变换下一次要进行的动作
-		switch (result)
-		{
-		case StateMachine::ENTRY:  // 执行进入状态动作
-			result = this->entry__(item);
-			break;
-		case StateMachine::QUIT:   // 执行退出状态动作
-			result = this->quit__(item);
-			break;
-		case StateMachine::TRANSITION:  // 状态转移动作
-			result = this->transition__(item);
-			break;
-		case StateMachine::NEXT:  // 读取下一个输入
-			// 检测是否超出输入表长度
-			if (inputLocation + 1 <= inputList.size())
-				item = inputList[inputLocation++];
-			else
-				inputLocation++;
-			// 状态变换为进入
-			result = StateMachine::ENTRY;
-			break;
-		case StateMachine::ERROR:  // 错误状态
+		// 进入动作
+		result = this->entry__();
+		if (this->CONTINUE != result)
 			return false;
-		default:
-			break;
+		// 输入状态
+		result = this->input_();  
+		if (this->INPUT_OVER == result)
+		{
+			isContinue = false;
 		}
-	}while (inputLocation <= inputList.size());
-	// 收尾
-	this->entry__(item);
-	this->transition__(item);
-	this->quit__(item);
-	
-
+		else if (this->INPUT_NORMAL != result)
+		{
+			STATELOG("Transition Error Code : " + Toolsets::intToStr(result));
+			return false;
+		}
+		// 转移动作
+		result = this->transition__();
+		if (this->TRANSITION_NORMAL != result)
+		{
+			STATELOG("Input Error Code : " + Toolsets::intToStr(result));
+			return false;
+		}
+		// 退出动作
+		result = this->quit__();
+		if (this->CONTINUE != result)
+			return false;
+		STATELOG("----------------------");
+	}
 	return true;
-}
-
-int XpLib::StateMachine::_entryEvent(std::string input)
-{
-	return StateMachine::NEXT;
-}
-
-int XpLib::StateMachine::_quitEvent(std::string input)
-{
-	return StateMachine::NEXT;
-}
-
-int XpLib::StateMachine::_transitionEvent(std::string input)
-{
-	return StateMachine::NEXT;
-}
-
-int XpLib::StateMachine::entry__(std::string input)
-{
-	return StateMachine::TRANSITION;
-	
-}
-
-int XpLib::StateMachine::quit__(std::string input)
-{
-	// 检测是否为结束状态
-	if (0 == this->_current->getTransitionTotal())
-	{
-		// 调用退出事件
-		int result = this->_quitEvent(input);
-		this->_current = this->_stateTable->getStarState();
-		return result;
-	}
-	else
-	{
-		this->_entryEvent(input);
-	}
-	return StateMachine::NEXT;
-}
-
-int XpLib::StateMachine::transition__(std::string input)
-{
-	// 进行动作转移,若当前输入无结果，则判断为错误输入
-	this->_previousState = this->_current;
-	this->_current = this->_current->getStateByInput(input);
-	// 检测是否是否成功过行
-	if (nullptr != this->_current)
-	{
-		// 调用进入事件
-		this->_transitionEvent(input);
-		return StateMachine::QUIT;
-	}
-	else
-	{
-		return StateMachine::ERROR;
-	}
 }
 

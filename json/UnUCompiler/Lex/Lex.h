@@ -46,7 +46,7 @@ namespace UnUCompiler
 		* 类型：WordLterator
 		* 描述：私有
 		*/
-		DEFINE_PRIVATE_READ_ONLY(WordLterator, __lterator, WordLterator);
+		DEFINE_PRIVATE_READ_ONLY(WordIterator, __iterator, WordIterator);
 
 		/*
 		* 功能：构造函数
@@ -66,28 +66,20 @@ namespace UnUCompiler
 
 	protected:
 		/*
-		* 功能：执行进入状态的动作
-		* 参数：输入
+		* 功能：进入动作
+		* 参数：无
 		* 返回：无
 		* 描述：无
 		*/
-		int _entryEvent(std::string input);
+		int entry__();
 
 		/*
-		* 功能：执行退出状态时的动作
-		* 参数：输入
-		* 返回：下一步的动作
+		* 功能：退出动作
+		* 参数：无
+		* 返回：无
 		* 描述：无
 		*/
-		int _quitEvent(std::string input);
-
-		/*
-		* 功能：执行进入时的状态
-		* 参数：输入
-		* 返回：下一步的动作
-		* 描述：无
-		*/
-		int _transitionEvent(std::string input);
+		int quit__();
 
 	public:
 

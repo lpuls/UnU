@@ -13,7 +13,7 @@
 
 namespace UnUCompiler
 {
-	class WordLterator
+	class WordIterator
 	{
 	private:
 		/*
@@ -30,7 +30,7 @@ namespace UnUCompiler
 		* 返回：无
 		* 描述：无
 		*/
-		WordLterator();
+		WordIterator();
 
 		/*
 		* 功能：析构函数
@@ -38,7 +38,7 @@ namespace UnUCompiler
 		* 返回：无
 		* 描述：无
 		*/
-		~WordLterator();
+		~WordIterator();
 
 		/*
 		* 功能：添加一个新词汇到尾部

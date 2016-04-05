@@ -1,13 +1,16 @@
+#include <iostream>
+
 #include "WordLterator.h"
 
 using namespace UnUCompiler;
 
-UnUCompiler::WordLterator::WordLterator()
+UnUCompiler::WordIterator::WordIterator()
 {
 }
 
-UnUCompiler::WordLterator::~WordLterator()
+UnUCompiler::WordIterator::~WordIterator()
 {
+	std::cout << "»ØÊÕ" << std::endl;
 	for (auto item : this->__lterator)
 	{
 		SAFE_DELETE(item);
@@ -15,26 +18,27 @@ UnUCompiler::WordLterator::~WordLterator()
 	this->__lterator.clear();
 }
 
-void UnUCompiler::WordLterator::push(Word * word)
+void UnUCompiler::WordIterator::push(Word * word)
 {
 	this->__lterator.push_back(word);
 }
 
-unsigned UnUCompiler::WordLterator::total()
+unsigned UnUCompiler::WordIterator::total()
 {
 	return this->__lterator.size();
 }
 
-Word * UnUCompiler::WordLterator::get(int index)
+Word * UnUCompiler::WordIterator::get(int index)
 {
 	if (index >= 0 && index < this->__lterator.size())
 	{
-		return this->__lterator[index];
+		auto temp = this->__lterator[index];
+		return temp;
 	}
 	return nullptr;
 }
 
-void UnUCompiler::WordLterator::clear()
+void UnUCompiler::WordIterator::clear()
 {
 	for (auto item : this->__lterator)
 	{
