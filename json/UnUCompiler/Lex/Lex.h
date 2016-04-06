@@ -20,12 +20,6 @@ namespace UnUCompiler
 	class Lex  : public StateMachine
 	{
 	private:
-		/*
-		* 功能：单例
-		* 类型：Lex*
-		* 描述：只能通过getInstance方法来获得
-		*/
-		static Lex *__instance;
 
 		/*
 		* 功能：关键字表
@@ -82,23 +76,6 @@ namespace UnUCompiler
 		int quit__();
 
 	public:
-
-		/*
-		* 功能：获取单例
-		* 参数：无
-		* 返回：Lex*
-		* 描述：无
-		*/
-		static Lex* getInstance();
-
-		/*
-		* 功能：释放单例
-		* 参数：无
-		* 返回：无
-		* 描述：无
-		*/
-		static void releaseInstance();
-
 	};
 
 }

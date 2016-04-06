@@ -96,6 +96,13 @@ namespace XpLib
 		/*
 		* 功能：错误代码，返回该值结束运行
 		* 类型：const int
+		* 描述：成功运行
+		*/
+		const int SUCCESS = -1;
+
+		/*
+		* 功能：错误代码，返回该值结束运行
+		* 类型：const int
 		* 描述：无
 		*/
 		const int ERROR = 0;
@@ -178,7 +185,7 @@ namespace XpLib
 		* 返回：是否完成状态转移
 		* 描述：无
 		*/
-		bool run();
+		int run();
 
 	};
 }

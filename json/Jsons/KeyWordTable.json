@@ -1,1 +1,1 @@
-{"key":["=","+","-","*","/","==",">","<",">=","<="],"value":{"=":"value_operator","+":"value_operator","-":"value_operator","*":"value_operator","/":"value_operator","==":"bool_operator",">":"bool_operator","<":"bool_operator",">=":"bool_operator","<=":"bool_operator"}}
+{"key":["=","+","-","*","/","==",">","<",">=","<="],"value":{"=":"assign","+":"value_operator","-":"value_operator","*":"value_operator","/":"value_operator","==":"bool_operator",">":"bool_operator","<":"bool_operator",">=":"bool_operator","<=":"bool_operator"}}

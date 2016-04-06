@@ -4,13 +4,13 @@
 
 int XpLib::StateMachine::entry__()
 {
-	STATELOG(this->_current->getState())
+	// STATELOG(this->_current->getState())
 	return this->CONTINUE;
 }
 
 int XpLib::StateMachine::quit__()
 {
-	STATELOG(this->_current->getState())
+	// STATELOG(this->_current->getState())
 	return this->CONTINUE;
 }
 
@@ -20,10 +20,12 @@ int XpLib::StateMachine::transition__()
 	if ("" == this->_input)
 		return this->TRANSITION_NULL_INPUT;
 	// 进行转移
+	this->_previousState = this->_current;
 	auto next = this->_current->getStateByInput(this->_input);
 	if (nullptr != next)
 	{			 
 		this->_current = next;
+		STATELOG("当前状态：" + this->_previousState->getState() + " ---" + this->_input + "---> 下一状态：" + this->_current->getState());
 		return this->TRANSITION_NORMAL;
 	}
 	return this->TRANSITION_ERROR;
@@ -63,7 +65,7 @@ XpLib::StateMachine::~StateMachine()
 	SAFE_DELETE(this->_current);
 }
 
-bool XpLib::StateMachine::run()
+int XpLib::StateMachine::run()
 {
 	bool isContinue = true;
 	int result = -1;
@@ -72,7 +74,7 @@ bool XpLib::StateMachine::run()
 		// 进入动作
 		result = this->entry__();
 		if (this->CONTINUE != result)
-			return false;
+			return result;
 		// 输入状态
 		result = this->input_();  
 		if (this->INPUT_OVER == result)
@@ -82,21 +84,21 @@ bool XpLib::StateMachine::run()
 		else if (this->INPUT_NORMAL != result)
 		{
 			STATELOG("Transition Error Code : " + Toolsets::intToStr(result));
-			return false;
+			return result;
 		}
 		// 转移动作
 		result = this->transition__();
 		if (this->TRANSITION_NORMAL != result)
 		{
 			STATELOG("Input Error Code : " + Toolsets::intToStr(result));
-			return false;
+			return result;
 		}
 		// 退出动作
 		result = this->quit__();
 		if (this->CONTINUE != result)
-			return false;
-		STATELOG("----------------------");
+			return result;
+		// STATELOG("----------------------");
 	}
-	return true;
+	return -1;
 }
 

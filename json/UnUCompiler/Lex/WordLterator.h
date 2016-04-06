@@ -21,7 +21,7 @@ namespace UnUCompiler
 		* 类型：std::vector<Word>
 		* 描述：无
 		*/
-		std::vector<Word*> __lterator;
+		std::vector<Word> __lterator;
 
 	public:
 		/*
@@ -46,7 +46,7 @@ namespace UnUCompiler
 		* 返回：无
 		* 描述：无
 		*/
-		void push(Word* word);
+		void push(Word word);
 
 		/*
 		* 功能：获取词汇量
@@ -62,7 +62,7 @@ namespace UnUCompiler
 		* 返回：词汇
 		* 描述：无
 		*/
-		Word* get(int index);
+		Word get(int index);
 
 		/*
 		* 功能：清理整个迭代器
