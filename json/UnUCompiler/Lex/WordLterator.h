@@ -62,7 +62,7 @@ namespace UnUCompiler
 		* 返回：词汇
 		* 描述：无
 		*/
-		Word get(int index);
+		Word get(unsigned int index);
 
 		/*
 		* 功能：清理整个迭代器

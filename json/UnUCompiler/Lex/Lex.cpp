@@ -32,6 +32,11 @@ int UnUCompiler::Lex::quit__()
 	{
 		if (" " != this->_input)
 			this->_location -= 1;
+		if ("\"" == this->_input && 0 != this->__currentWord.length())
+		{
+			this->__currentWord += "\"";
+			this->_location += 1;
+		}
 		LEXLOG("终端节点：" + this->_current->getState() + " 节点词汇：" + this->__currentWord + "\n");
 		// 将记录下来的字符串转化为词汇
 		Word word;

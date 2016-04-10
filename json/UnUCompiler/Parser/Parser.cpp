@@ -4,6 +4,38 @@
 
 #define PARLOG(var) Toolsets::getInstance()->log(var, "Parser");
 
+int UnUCompiler::Parser::matchBrackets__(std::string brackets)
+{
+	// 得到括号的前后缀
+	auto bracketsPrefix = brackets.substr(0, brackets.find("_"));
+	auto bracketsSuffix = brackets.substr(0, brackets.find("_") + 1);
+	if (0 != this->__brackets.size())
+	{
+		auto top = this->__brackets.top();
+		// 得到栈顶的前后缀
+		auto topPrefix = top.substr(0, top.find("_"));
+		auto topSuffix = top.substr(top.find("_") + 1);
+		// 检测是否为左侧括号
+		if ("left" == bracketsSuffix)
+		{
+			this->__brackets.push(brackets);
+			return Parser::ADD;
+		}
+		else if ("left" == topSuffix && bracketsPrefix == topPrefix)  // 若为右括号，检测是否与栈顶元素相符
+		{
+			this->__brackets.pop();
+			return Parser::SUCCESS;
+		}
+		return Parser::FAILED;
+	}
+	else if ("left" == bracketsSuffix)
+	{
+		this->__brackets.push(brackets);
+		return Parser::ADD;
+	}
+	return Parser::FAILED;
+}
+
 UnUCompiler::Parser::Parser(std::string path) : StateMachine(path)
 {
 }
@@ -24,30 +56,55 @@ int UnUCompiler::Parser::run()
 	auto result = StateMachine::run();
 	if (StateMachine::SUCCESS == result)
 	{
-		if (0 == this->_current->getTransitionTotal())
-		{
-			PARLOG("Success");
-			return -1;
-		}
-		else
+		// 检测是否存在未完全匹配完成的情况
+		if (this->_stateTable->getStarState() != this->_current)
 		{
 			PARLOG("Code Incomplete, Error Code：" + Toolsets::intToStr(Parser::CODE_INCOMPLETE));
-			return Parser::CODE_INCOMPLETE;
+			result = Parser::CODE_INCOMPLETE;
 		}
+		// 检测括号不匹配的问题
+		if (0 != this->__brackets.size())
+		{
+			PARLOG("Un Match Brackets, Error Code :" + Toolsets::intToStr(Parser::BRACKETS_MATCH_ERROR));
+			result = Parser::BRACKETS_MATCH_ERROR;
+		}
+		return result;
 	}
 	PARLOG("Error Code：" + Toolsets::intToStr(result));
-	return false;
+	return result;
 }
 
 int UnUCompiler::Parser::entry__()
 {
-	// PARLOG("开始节点：" + this->_current->getState());
+	this->__recordNode = RecordNode();
+	this->__recordNode.setStart(this->_location);
 	return StateMachine::entry__();
 }
 
 int UnUCompiler::Parser::quit__()
 {
-	// PARLOG("下一节点：" + this->_current->getState());
-	return StateMachine::quit__();
+	if (0 == this->_current->getTransitionTotal())
+	{
+		this->_current = this->_stateTable->getStarState();
+		this->__recordNode.setEnd(this->_location);
+		this->__sign.push_back(this->__recordNode);
+		return StateMachine::quit__();
+	}
+	else
+	{
+		auto result = this->matchBrackets__(this->_input);
+		// 匹配结果为添加时，正常运行
+		if (Parser::ADD == result || Parser::SUCCESS)
+		{
+			return StateMachine::quit__();
+		}
+		else  // 返回失败的错误
+		{
+			return Parser::BRACKETS_MATCH_ERROR;
+		}
+	}
+	
 }
+
+
 

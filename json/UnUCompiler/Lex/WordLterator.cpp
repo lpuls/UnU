@@ -25,7 +25,7 @@ unsigned UnUCompiler::WordIterator::total()
 	return this->__lterator.size();
 }
 
-Word UnUCompiler::WordIterator::get(int index)
+Word UnUCompiler::WordIterator::get(unsigned int index)
 {
 	if (index >= 0 && index < this->__lterator.size())
 	{

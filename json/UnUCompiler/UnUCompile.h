@@ -6,6 +6,7 @@
 #ifndef __UNU_COMPILE__
 #define __UNU_COMPILE__
 
+#include <string>
 
 namespace UnUCompiler
 {
@@ -17,6 +18,9 @@ namespace UnUCompiler
 	const std::string keyWordPath = JsonPath + "/KeyWordTable.json";
 	const std::string LexPath = JsonPath + "/Lex.json";
 
+	// 语义分析时返回的结果
+	const int SUCCESS = -1;
+	const int TYPE_ERROR = 1;
 	
 }
 

@@ -6,8 +6,10 @@
 #ifndef __PARSER__
 #define __PARSER__
 
+#include <stack>
 #include <iostream>
 
+#include "RecordNode.h"
 #include "../../FiniteState/StateMachine.h"
 
 using namespace XpLib;
@@ -18,11 +20,61 @@ namespace UnUCompiler
 	{
 	private:
 		/*
+		* 功能：括号匹配失败
+		* 类型：const int
+		* 描述：不可访问，常量
+		*/
+		const int FAILED = -1;
+
+		/*
+		* 功能：添加括号到栈中
+		* 类型：const int
+		* 描述：不可访问，常量
+		*/
+		const int ADD = 0;
+
+		/*
+		* 功能：成功
+		* 类型：const int
+		* 描述：不可访问，常量
+		*/
+		const int SUCCESS = 1;
+
+		/*
+		* 功能：用来记录当前的语法节点
+		* 类型：RecordNode
+		* 描述：无
+		*/
+		RecordNode __recordNode;
+
+		/*
 		* 功能：词汇迭代器
 		* 类型：WordIterator
 		* 描述：无
 		*/
 		std::vector<std::string> __wordIterator;
+
+		/*
+		* 功能：记录括号
+		* 类型：std::stack<std::string>
+		* 描述：无
+		*/
+		std::stack<std::string> __brackets;
+
+		/*
+		* 功能：记录信号
+		* 类型：std::stack<RecordNode>
+		* 描述：无
+		*/
+		DEFINE_PRIVATE_READ_ONLY(std::vector<RecordNode>, __sign, Sign);
+
+		/*
+		* 功能：括号匹配
+		* 参数：std::string 括号
+		* 返回：int，结果（-1：失败， 0：添加， 1：成功）
+		* 描述：外部不可访问
+		*/
+		int matchBrackets__(std::string brackets);
 
 	public:
 		/*
@@ -31,6 +83,13 @@ namespace UnUCompiler
 		* 描述：代码不完整
 		*/
 		const int CODE_INCOMPLETE = 50;
+
+		/*
+		* 功能：错误代码，返回该值结束运行
+		* 类型：const int
+		* 描述：括号匹配失败
+		*/
+		const int BRACKETS_MATCH_ERROR = 51;
 
 		/*
 		* 功能：构造函数
