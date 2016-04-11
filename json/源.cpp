@@ -15,6 +15,11 @@
 #include "UnUCompiler\AST\ASTNodeCreater.h"
 #include "UnUCompiler\AST\ASTIntegerNode.h"
 #include "UnUCompiler\AST\ASTFloatNode.h"
+#include "UnUCompiler\AST\ASTStringNode.h"
+#include "UnUCompiler\AST\ASTTokenNode.h"
+#include "UnUCompiler\AST\ASTAssignNode.h"
+#include "UnUCompiler\AST\ASTOperatorNode.h"
+
 #include "UnUCompiler\Semantic\PowerTable.h"
 
 #include "json\json.h"
@@ -77,13 +82,41 @@ int main()
 	MAINLOG("-------------------以下内容是进行AST生成----------------------");
 	auto integer = dynamic_cast<ASTIntegerNode*>(ASTNodeCreater::create("10086", "integer"));
 	auto floatNumber = dynamic_cast<ASTFloatNode*>(ASTNodeCreater::create("100.86", "float"));
+	auto stringValue = dynamic_cast<ASTStringNode*>(ASTNodeCreater::create("\"This is a test\"", "string"));
+	auto token = dynamic_cast<ASTTokenNode*>(ASTNodeCreater::create("a", AST_TOKEN));
+
+	auto assign = dynamic_cast<ASTAssignNode*>(ASTNodeCreater::create("=", AST_ASSIGN));
+	assign->setLeft(token);
+	
+
+	auto add = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("+", AST_OPERATOR));
+	auto add_I = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("+", AST_OPERATOR));
+	auto add_II = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("+", AST_OPERATOR));
+	add->setLeft(add_I);
+	add->setRight(add_II);
+	add_I->setLeft(integer);
+	add_I->setRight(integer);
+	add_II->setLeft(floatNumber);
+	add_II->setRight(floatNumber);
+
+	assign->setRight(add_I);
+	
 
 	MAINLOG("Type:" + integer->getType() + "\t Value:" + Toolsets::intToStr(integer->getValue()));
 	MAINLOG("Type:" + floatNumber->getType() + "\t Value:" + Toolsets::doubleToStr(floatNumber->getValue()));
-
+	MAINLOG("Type:" + stringValue->getType() + "\t Value:" + stringValue->getValue());
+	MAINLOG("Type:" + token->getType() + "\t Value:");
+	MAINLOG("Check Result : " + Toolsets::intToStr(assign->check()));
+	MAINLOG("Check Result : " + Toolsets::intToStr(add->check()));
 
 	SAFE_DELETE(integer);
 	SAFE_DELETE(floatNumber);
+	SAFE_DELETE(stringValue);
+	SAFE_DELETE(token);
+	SAFE_DELETE(assign);
+	SAFE_DELETE(add);
+	SAFE_DELETE(add_I);
+	SAFE_DELETE(add_II);
 
 	MAINLOG("\n\n-------------------以下内容是进行语义生成----------------------");
 

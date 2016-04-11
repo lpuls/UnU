@@ -6,6 +6,9 @@
 #ifndef __AST_NODE__
 #define __AST_NODE__
 
+#include <iostream>
+
+#include "../../Tools.h"
 #include "../UnUCompile.h"
 
 
@@ -31,8 +34,6 @@ namespace UnUCompiler
 		*/
 		virtual int check();
 
-		
-
 	protected:
 		/*
 		* 功能：构造函数
@@ -42,6 +43,12 @@ namespace UnUCompiler
 		*/
 		ASTNode();
 
+		/*
+		* 功能：用来记录自身是什么节点
+		* 类型：std::string
+		* 描述：无
+		*/
+		DEFINE_PROTECTED(std::string, _valueType, ValueType);
 	};
 }
 

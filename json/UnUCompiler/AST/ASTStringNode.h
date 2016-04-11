@@ -1,26 +1,27 @@
 /*
-* 描述：整数类型
+* 描述：字符串AST节点
 * 作者：xp
-* 日期：2016-4-6
+* 日期：2016-4-11
 */
-#ifndef __AST_INTEGER_NODE__
-#define __AST_INTEGER_NODE__
+#ifndef __AST_STRING_NODE__
+#define __AST_STRING_NODE__
 
-#include "ASTValueNode.h" 
+#include "ASTValueNode.h"
+
 
 namespace UnUCompiler
 {
-	class ASTIntegerNode : public ASTValueNode<int>
+	class ASTStringNode : public ASTValueNode<std::string>
 	{
 		friend class ASTNodeCreater;
-	public:	
+	public:
 		/*
 		* 功能：析构函数
 		* 参数：无
 		* 返回：无
 		* 描述：无
 		*/
-		~ASTIntegerNode();
+		~ASTStringNode();
 
 	private:
 		/*
@@ -29,7 +30,8 @@ namespace UnUCompiler
 		* 返回：无
 		* 描述：无
 		*/
-		ASTIntegerNode();
+		ASTStringNode();
+
 	};
 }
 

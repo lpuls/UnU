@@ -5,9 +5,11 @@
 
 UnUCompiler::ASTIntegerNode::~ASTIntegerNode()
 {
-	this->_type = "integer";
+	
 }
 
 UnUCompiler::ASTIntegerNode::ASTIntegerNode()
 {
+	this->_type = "integer";
+	this->_valueType = AST_INTEGER;
 }

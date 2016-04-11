@@ -18,6 +18,17 @@ namespace UnUCompiler
 	const std::string keyWordPath = JsonPath + "/KeyWordTable.json";
 	const std::string LexPath = JsonPath + "/Lex.json";
 
+	// AST的数值类型
+	const std::string AST_INTEGER = "integer";
+	const std::string AST_FLOAT = "float";
+	const std::string AST_STRING = "string";
+	const std::string AST_TOKEN = "token";
+	const std::string AST_EXP = "exp";
+	const std::string AST_OPERATOR = "operator";
+	const std::string AST_VALUE_OPERATOR = "value_operator";
+	const std::string AST_BOOL_OPERATOR = "bool_operator";
+	const std::string AST_ASSIGN = "assign";
+
 	// 语义分析时返回的结果
 	const std::string PowerTablePath = JsonPath + "/PowerTable.json";
 	const int SUCCESS = -1;

@@ -6,13 +6,13 @@
 #ifndef __AST_VALUE_NODE__
 #define __AST_VALUE_NODE__
 
-#include "ASTNode.h"
+#include "ASTExpNode.h"
 #include "../../Tools.h"
 
 namespace UnUCompiler
 {
 	template<class T>
-	class ASTValueNode : public ASTNode 
+	class ASTValueNode : public ASTExpNode 
 	{
 		friend class ASTNodeCreater;
 	public:

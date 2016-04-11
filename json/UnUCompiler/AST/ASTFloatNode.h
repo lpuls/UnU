@@ -10,7 +10,7 @@
 
 namespace UnUCompiler
 {
-	class ASTFloatNode : public ASTValueNode<float>
+	class ASTFloatNode : public ASTValueNode<double>
 	{
 		friend class ASTNodeCreater;
 	public:
