@@ -39,9 +39,14 @@ int UnUCompiler::ASTOperatorNode::check()
 {
 	if ("" != this->_type)
 		return SUCCESS;
+	if (!this->_right || !this->_left)
+		return NULL_CHILD;
 	std::string rightType = this->getChildType__(this->_right);
 	std::string leftType = this->getChildType__(this->_left);
-	if (rightType == leftType && "" != rightType && "" != leftType)
+	if ((rightType == leftType 
+		|| AST_INTEGER == rightType && AST_FLOAT == leftType 
+		|| AST_INTEGER == leftType && AST_FLOAT == rightType)
+		&& "" != rightType && "" != leftType)
 	{
 		this->_type = rightType;
 		return SUCCESS;

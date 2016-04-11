@@ -25,14 +25,17 @@ namespace UnUCompiler
 	const std::string AST_TOKEN = "token";
 	const std::string AST_EXP = "exp";
 	const std::string AST_OPERATOR = "operator";
-	const std::string AST_VALUE_OPERATOR = "value_operator";
-	const std::string AST_BOOL_OPERATOR = "bool_operator";
 	const std::string AST_ASSIGN = "assign";
+	const std::string AST_BODY = "body";
+	const std::string AST_IF = "if";
+	const std::string AST_LOOP = "loop";
 
 	// 语义分析时返回的结果
 	const std::string PowerTablePath = JsonPath + "/PowerTable.json";
 	const int SUCCESS = -1;
-	const int TYPE_ERROR = 1;
+	const int TYPE_ERROR = 1;  // 类型错误
+	const int NULL_CHILD = 2;  // 空的检测分支
+	const int UNKNOW_BOOL = 3;  // 未知的布尔表达式
 
 	
 }

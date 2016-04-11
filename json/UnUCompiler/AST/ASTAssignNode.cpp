@@ -8,6 +8,8 @@ UnUCompiler::ASTAssignNode::ASTAssignNode()
 
 int UnUCompiler::ASTAssignNode::check()
 {
+	if (!this->__right || !this->__left)
+		return NULL_CHILD;
 	auto rightValueOperatorNode = dynamic_cast<ASTOperatorNode*>(this->__right);
 	// 检测是否为数值操作符
 	if (rightValueOperatorNode && rightValueOperatorNode->getValueType() == AST_OPERATOR)
@@ -15,8 +17,16 @@ int UnUCompiler::ASTAssignNode::check()
 		auto result = rightValueOperatorNode->check();
 		if (SUCCESS == result)
 		{
-			this->__left->setType(rightValueOperatorNode->getType());
-			return SUCCESS;
+			// 左值类型一定要等于右值才能进行运算
+			if ("" == this->__left->getType() || this->__left->getType() == rightValueOperatorNode->getType())
+			{
+				this->__left->setType(rightValueOperatorNode->getType());
+				return SUCCESS;
+			}
+			else  // 左值类型不等于右值，类型错误
+			{
+				return TYPE_ERROR;
+			}
 		}
 	}
 	else  // 数值类型的节点
@@ -28,19 +38,30 @@ int UnUCompiler::ASTAssignNode::check()
 			return TYPE_ERROR;
 		auto rightValueType = rightNode->getValueType();
 		// 检测右值是否为AST_Token
-		if (rightValueType != AST_TOKEN)
+		if (rightValueType != AST_TOKEN)  // 右值不为Token
 		{
-			this->__left->setType(rightValueType);
-			return SUCCESS;
+			if ("" == this->__left->getType() || this->__left->getType() == rightValueType)
+			{		
+				this->__left->setType(rightValueType);
+				return SUCCESS;
+			}
+			else
+			{
+				return TYPE_ERROR;
+			}
 		}
 		else // 右值为AST_Token
 		{
 			// 取出AST_Token的类型
 			auto tokenType = dynamic_cast<ASTTokenNode*>(this->__right);
-			if (tokenType->getType() == this->__left->getType())
+			if ("" == this->__left->getType() || tokenType->getType() == this->__left->getType())
 			{
 				this->__left->setType(rightValueType);
 				return SUCCESS;
+			}
+			else
+			{
+				return TYPE_ERROR;
 			}
 		}
 

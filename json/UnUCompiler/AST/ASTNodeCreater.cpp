@@ -6,6 +6,8 @@
 #include "ASTTokenNode.h"
 #include "ASTAssignNode.h"
 #include "ASTOperatorNode.h"
+#include "ASTBodyNode.h"
+#include "ASTStructNode.h"
 
 #include "../../Toolsets.h"
 #include "../UnUCompile.h"
@@ -51,6 +53,17 @@ ASTNode * UnUCompiler::ASTNodeCreater::create(std::string word, std::string word
 			result->setIsBool(false);
 		else
 			result->setIsBool(true);
+		return result;
+	}
+	else if (AST_BODY == wordValue)  // 生成结构节点
+	{
+		auto result = new ASTBodyNode();
+		return result;
+	}
+	else if (AST_IF == wordValue || AST_LOOP == wordValue)  // 生成判断节点 or 生成循环节点
+	{
+		auto result = new ASTStructNode();
+		result->setValueType(wordValue);
 		return result;
 	}
 	return new ASTNode();

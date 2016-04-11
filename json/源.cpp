@@ -19,6 +19,8 @@
 #include "UnUCompiler\AST\ASTTokenNode.h"
 #include "UnUCompiler\AST\ASTAssignNode.h"
 #include "UnUCompiler\AST\ASTOperatorNode.h"
+#include "UnUCompiler\AST\ASTBodyNode.h"
+#include "UnUCompiler\AST\ASTStructNode.h"
 
 #include "UnUCompiler\Semantic\PowerTable.h"
 
@@ -80,43 +82,56 @@ int main()
 		MAINLOG("Parser Success !!!");
 
 	MAINLOG("-------------------以下内容是进行AST生成----------------------");
-	auto integer = dynamic_cast<ASTIntegerNode*>(ASTNodeCreater::create("10086", "integer"));
-	auto floatNumber = dynamic_cast<ASTFloatNode*>(ASTNodeCreater::create("100.86", "float"));
+	auto integer = dynamic_cast<ASTIntegerNode*>(ASTNodeCreater::create("0", "integer"));
+	auto floatNumber = dynamic_cast<ASTFloatNode*>(ASTNodeCreater::create("10.0", "float"));
 	auto stringValue = dynamic_cast<ASTStringNode*>(ASTNodeCreater::create("\"This is a test\"", "string"));
+	
 	auto token = dynamic_cast<ASTTokenNode*>(ASTNodeCreater::create("a", AST_TOKEN));
+	auto token2 = dynamic_cast<ASTTokenNode*>(ASTNodeCreater::create("i", AST_TOKEN));
 
-	auto assign = dynamic_cast<ASTAssignNode*>(ASTNodeCreater::create("=", AST_ASSIGN));
-	assign->setLeft(token);
+	auto assign = dynamic_cast<ASTAssignNode*>(ASTNodeCreater::create("=", AST_ASSIGN));  // token = token + integer
+	auto assign2 = dynamic_cast<ASTAssignNode*>(ASTNodeCreater::create("=", AST_ASSIGN));  // token = integer
+	assign->setLeft(token2);
+	assign->setRight(floatNumber);
+	assign2->setLeft(token);
+	assign2->setRight(integer);
+	
+	// auto add = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("+", AST_OPERATOR));  // token + (float + string)
+	auto equit = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("==", AST_OPERATOR));  // a == 0
+	equit->setLeft(token);
+	equit->setRight(integer);
+
+	auto body = dynamic_cast<ASTBodyNode*>(ASTNodeCreater::create("body", AST_BODY));  // { token = token + integer }
+	body->addChild(assign);
+
+	auto ifStruct = dynamic_cast<ASTStructNode*>(ASTNodeCreater::create("if", AST_LOOP)); // if a == 0 { i = 10.0; }
+	ifStruct->setLeft(equit);
+	ifStruct->setRight(body);
 	
 
-	auto add = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("+", AST_OPERATOR));
-	auto add_I = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("+", AST_OPERATOR));
-	auto add_II = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("+", AST_OPERATOR));
-	add->setLeft(add_I);
-	add->setRight(add_II);
-	add_I->setLeft(integer);
-	add_I->setRight(integer);
-	add_II->setLeft(floatNumber);
-	add_II->setRight(floatNumber);
-
-	assign->setRight(add_I);
-	
 
 	MAINLOG("Type:" + integer->getType() + "\t Value:" + Toolsets::intToStr(integer->getValue()));
 	MAINLOG("Type:" + floatNumber->getType() + "\t Value:" + Toolsets::doubleToStr(floatNumber->getValue()));
 	MAINLOG("Type:" + stringValue->getType() + "\t Value:" + stringValue->getValue());
 	MAINLOG("Type:" + token->getType() + "\t Value:");
-	MAINLOG("Check Result : " + Toolsets::intToStr(assign->check()));
-	MAINLOG("Check Result : " + Toolsets::intToStr(add->check()));
+
+	assign2->check();
+	// MAINLOG("OPERATOR Check Result : " + Toolsets::intToStr(add->check()));
+	// MAINLOG("ASSIGN Check Result : " + Toolsets::intToStr(assign->check()));
+	// MAINLOG("BODY Check Result : " + Toolsets::intToStr(body->check()));
+	MAINLOG("IF Check Result : " + Toolsets::intToStr(ifStruct->check()));
+
+	MAINLOG("Type:" + integer->getType() + "\t Value:" + Toolsets::intToStr(integer->getValue()));
+	MAINLOG("Type:" + floatNumber->getType() + "\t Value:" + Toolsets::doubleToStr(floatNumber->getValue()));
+	MAINLOG("Type:" + stringValue->getType() + "\t Value:" + stringValue->getValue());
+	MAINLOG("Type:" + token->getType() + "\t Value:");
 
 	SAFE_DELETE(integer);
 	SAFE_DELETE(floatNumber);
 	SAFE_DELETE(stringValue);
 	SAFE_DELETE(token);
 	SAFE_DELETE(assign);
-	SAFE_DELETE(add);
-	SAFE_DELETE(add_I);
-	SAFE_DELETE(add_II);
+	// SAFE_DELETE(add);
 
 	MAINLOG("\n\n-------------------以下内容是进行语义生成----------------------");
 
