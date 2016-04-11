@@ -10,5 +10,4 @@ UnUCompiler::ASTIntegerNode::~ASTIntegerNode()
 
 UnUCompiler::ASTIntegerNode::ASTIntegerNode()
 {
-	ASTLOG("ªÿ ’");
 }

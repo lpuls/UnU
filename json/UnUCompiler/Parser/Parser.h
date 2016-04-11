@@ -41,13 +41,6 @@ namespace UnUCompiler
 		const int SUCCESS = 1;
 
 		/*
-		* 功能：用来记录当前的语法节点
-		* 类型：RecordNode
-		* 描述：无
-		*/
-		RecordNode __recordNode;
-
-		/*
 		* 功能：词汇迭代器
 		* 类型：WordIterator
 		* 描述：无
@@ -60,13 +53,6 @@ namespace UnUCompiler
 		* 描述：无
 		*/
 		std::stack<std::string> __brackets;
-
-		/*
-		* 功能：记录信号
-		* 类型：std::stack<RecordNode>
-		* 描述：无
-		*/
-		DEFINE_PRIVATE_READ_ONLY(std::vector<RecordNode>, __sign, Sign);
 
 		/*
 		* 功能：括号匹配

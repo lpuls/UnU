@@ -19,8 +19,10 @@ namespace UnUCompiler
 	const std::string LexPath = JsonPath + "/Lex.json";
 
 	// 语义分析时返回的结果
+	const std::string PowerTablePath = JsonPath + "/PowerTable.json";
 	const int SUCCESS = -1;
 	const int TYPE_ERROR = 1;
+
 	
 }
 

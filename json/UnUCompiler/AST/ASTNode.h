@@ -6,7 +6,7 @@
 #ifndef __AST_NODE__
 #define __AST_NODE__
 
-#include "../../UnUCompile.h"
+#include "../UnUCompile.h"
 
 
 namespace UnUCompiler

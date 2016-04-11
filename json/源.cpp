@@ -11,9 +11,11 @@
 #include "UnUCompiler\Lex\Lex.h"
 #include "UnUCompiler\Lex\KeyWordsTable.h"
 #include "UnUCompiler\Parser\Parser.h"
-#include "UnUCompiler\Parser\AST\ASTValueNode.h"
-#include "UnUCompiler\Parser\AST\ASTNodeCreater.h"
-#include "UnUCompiler\Parser\AST\ASTIntegerNode.h"
+#include "UnUCompiler\AST\ASTValueNode.h"
+#include "UnUCompiler\AST\ASTNodeCreater.h"
+#include "UnUCompiler\AST\ASTIntegerNode.h"
+#include "UnUCompiler\AST\ASTFloatNode.h"
+#include "UnUCompiler\Semantic\PowerTable.h"
 
 #include "json\json.h"
 
@@ -31,6 +33,7 @@ int main()
 	Toolsets::getInstance()->addSwitch("LEX");
 	Toolsets::getInstance()->addSwitch("Parser");
 	Toolsets::getInstance()->addSwitch("AST");
+	Toolsets::getInstance()->addSwitch("PowerTable");
 
 	std::vector<std::string> inputList;
 	std::vector<std::string> wordValueList;
@@ -71,14 +74,18 @@ int main()
 	if (-1 == result)
 		MAINLOG("Parser Success !!!");
 
-	MAINLOG("-------------------以下内容是进行语义分析----------------------");
-	auto sign = pr.getSign();
-	for (auto item : sign)
-		MAINLOG(item.getType() + "\t" + Toolsets::intToStr(item.getStart()) + "\t" + Toolsets::intToStr(item.getEnd()));
-	auto integer = ASTNodeCreater::create("10086", "integer");
-	MAINLOG(((ASTIntegerNode*)integer)->getType());
-	MAINLOG(Toolsets::intToStr(((ASTIntegerNode*)integer)->getValue()));
+	MAINLOG("-------------------以下内容是进行AST生成----------------------");
+	auto integer = dynamic_cast<ASTIntegerNode*>(ASTNodeCreater::create("10086", "integer"));
+	auto floatNumber = dynamic_cast<ASTFloatNode*>(ASTNodeCreater::create("100.86", "float"));
+
+	MAINLOG("Type:" + integer->getType() + "\t Value:" + Toolsets::intToStr(integer->getValue()));
+	MAINLOG("Type:" + floatNumber->getType() + "\t Value:" + Toolsets::doubleToStr(floatNumber->getValue()));
+
+
 	SAFE_DELETE(integer);
+	SAFE_DELETE(floatNumber);
+
+	MAINLOG("\n\n-------------------以下内容是进行语义生成----------------------");
 
 	Toolsets::releaseInstance();
 

@@ -76,8 +76,6 @@ int UnUCompiler::Parser::run()
 
 int UnUCompiler::Parser::entry__()
 {
-	this->__recordNode = RecordNode();
-	this->__recordNode.setStart(this->_location);
 	return StateMachine::entry__();
 }
 
@@ -86,8 +84,6 @@ int UnUCompiler::Parser::quit__()
 	if (0 == this->_current->getTransitionTotal())
 	{
 		this->_current = this->_stateTable->getStarState();
-		this->__recordNode.setEnd(this->_location);
-		this->__sign.push_back(this->__recordNode);
 		return StateMachine::quit__();
 	}
 	else
@@ -103,7 +99,7 @@ int UnUCompiler::Parser::quit__()
 			return Parser::BRACKETS_MATCH_ERROR;
 		}
 	}
-	
+
 }
 
 
