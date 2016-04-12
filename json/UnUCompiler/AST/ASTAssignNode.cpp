@@ -12,7 +12,7 @@ int UnUCompiler::ASTAssignNode::check()
 		return NULL_CHILD;
 	auto rightValueOperatorNode = dynamic_cast<ASTOperatorNode*>(this->__right);
 	// 检测是否为数值操作符
-	if (rightValueOperatorNode && rightValueOperatorNode->getValueType() == AST_OPERATOR)
+	if (rightValueOperatorNode && rightValueOperatorNode->getValueType() == AST_VALUE_OPERATOR)
 	{
 		auto result = rightValueOperatorNode->check();
 		if (SUCCESS == result)
@@ -71,4 +71,6 @@ int UnUCompiler::ASTAssignNode::check()
 
 UnUCompiler::ASTAssignNode::~ASTAssignNode()
 {
+	SAFE_DELETE(this->__left);
+	SAFE_DELETE(this->__right);
 }

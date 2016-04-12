@@ -46,13 +46,18 @@ ASTNode * UnUCompiler::ASTNodeCreater::create(std::string word, std::string word
 		auto result = new ASTAssignNode();
 		return result;
 	}
-	else if (AST_OPERATOR == wordValue)  // 生成操作符节点
+	else if (AST_BOOL_OPERATOR == wordValue || AST_VALUE_OPERATOR == wordValue)  // 生成操作符节点
 	{
 		auto result = new ASTOperatorNode();
-		if ("+" == word || "-" == word || "*" == word || "/" == word)
+		if (AST_VALUE_OPERATOR == wordValue)
+		{
 			result->setIsBool(false);
+		}
 		else
+		{
 			result->setIsBool(true);
+		}
+		result->setValueType(wordValue);
 		return result;
 	}
 	else if (AST_BODY == wordValue)  // 生成结构节点

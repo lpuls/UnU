@@ -3,7 +3,6 @@
 
 UnUCompiler::ASTOperatorNode::ASTOperatorNode()
 {
-	this->_valueType = AST_OPERATOR;
 	this->_isBool = false;
 }
 
@@ -17,7 +16,7 @@ std::string UnUCompiler::ASTOperatorNode::getChildType__(ASTExpNode * child)
 		if (result == SUCCESS)
 			return exp->getType();
 		else
-			return "";
+			return ERROR;
 	}
 	else
 	{
@@ -33,6 +32,9 @@ std::string UnUCompiler::ASTOperatorNode::getChildType__(ASTExpNode * child)
 
 UnUCompiler::ASTOperatorNode::~ASTOperatorNode()
 {
+	SAFE_DELETE(this->_left);
+	SAFE_DELETE(this->_right);
+
 }
 
 int UnUCompiler::ASTOperatorNode::check()
@@ -43,10 +45,11 @@ int UnUCompiler::ASTOperatorNode::check()
 		return NULL_CHILD;
 	std::string rightType = this->getChildType__(this->_right);
 	std::string leftType = this->getChildType__(this->_left);
-	if ((rightType == leftType 
+	if ("" == leftType
+		|| (rightType == leftType 
 		|| AST_INTEGER == rightType && AST_FLOAT == leftType 
 		|| AST_INTEGER == leftType && AST_FLOAT == rightType)
-		&& "" != rightType && "" != leftType)
+		&& ERROR != rightType && ERROR != leftType)
 	{
 		this->_type = rightType;
 		return SUCCESS;

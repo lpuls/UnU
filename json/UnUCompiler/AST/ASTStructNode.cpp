@@ -6,6 +6,8 @@ UnUCompiler::ASTStructNode::ASTStructNode()
 
 UnUCompiler::ASTStructNode::~ASTStructNode()
 {
+	SAFE_DELETE(this->_left);
+	SAFE_DELETE(this->_right);
 }
 
 int UnUCompiler::ASTStructNode::check()

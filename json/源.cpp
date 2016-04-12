@@ -82,56 +82,13 @@ int main()
 		MAINLOG("Parser Success !!!");
 
 	MAINLOG("-------------------以下内容是进行AST生成----------------------");
-	auto integer = dynamic_cast<ASTIntegerNode*>(ASTNodeCreater::create("0", "integer"));
-	auto floatNumber = dynamic_cast<ASTFloatNode*>(ASTNodeCreater::create("10.0", "float"));
-	auto stringValue = dynamic_cast<ASTStringNode*>(ASTNodeCreater::create("\"This is a test\"", "string"));
-	
-	auto token = dynamic_cast<ASTTokenNode*>(ASTNodeCreater::create("a", AST_TOKEN));
-	auto token2 = dynamic_cast<ASTTokenNode*>(ASTNodeCreater::create("i", AST_TOKEN));
+	auto tokenI = CreateASTNode(ASTTokenNode*, "a", AST_TOKEN);
+	auto operatorI = CreateASTNode(ASTOperatorNode*, "+", AST_VALUE_OPERATOR);
+	auto integerI = CreateASTNode(ASTIntegerNode*, "10", AST_INTEGER);
+	operatorI->setLeft(tokenI);
+	operatorI->setRight(integerI);
+	MAINLOG("Check Result : " + Toolsets::intToStr(operatorI->check()));
 
-	auto assign = dynamic_cast<ASTAssignNode*>(ASTNodeCreater::create("=", AST_ASSIGN));  // token = token + integer
-	auto assign2 = dynamic_cast<ASTAssignNode*>(ASTNodeCreater::create("=", AST_ASSIGN));  // token = integer
-	assign->setLeft(token2);
-	assign->setRight(floatNumber);
-	assign2->setLeft(token);
-	assign2->setRight(integer);
-	
-	// auto add = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("+", AST_OPERATOR));  // token + (float + string)
-	auto equit = dynamic_cast<ASTOperatorNode*>(ASTNodeCreater::create("==", AST_OPERATOR));  // a == 0
-	equit->setLeft(token);
-	equit->setRight(integer);
-
-	auto body = dynamic_cast<ASTBodyNode*>(ASTNodeCreater::create("body", AST_BODY));  // { token = token + integer }
-	body->addChild(assign);
-
-	auto ifStruct = dynamic_cast<ASTStructNode*>(ASTNodeCreater::create("if", AST_LOOP)); // if a == 0 { i = 10.0; }
-	ifStruct->setLeft(equit);
-	ifStruct->setRight(body);
-	
-
-
-	MAINLOG("Type:" + integer->getType() + "\t Value:" + Toolsets::intToStr(integer->getValue()));
-	MAINLOG("Type:" + floatNumber->getType() + "\t Value:" + Toolsets::doubleToStr(floatNumber->getValue()));
-	MAINLOG("Type:" + stringValue->getType() + "\t Value:" + stringValue->getValue());
-	MAINLOG("Type:" + token->getType() + "\t Value:");
-
-	assign2->check();
-	// MAINLOG("OPERATOR Check Result : " + Toolsets::intToStr(add->check()));
-	// MAINLOG("ASSIGN Check Result : " + Toolsets::intToStr(assign->check()));
-	// MAINLOG("BODY Check Result : " + Toolsets::intToStr(body->check()));
-	MAINLOG("IF Check Result : " + Toolsets::intToStr(ifStruct->check()));
-
-	MAINLOG("Type:" + integer->getType() + "\t Value:" + Toolsets::intToStr(integer->getValue()));
-	MAINLOG("Type:" + floatNumber->getType() + "\t Value:" + Toolsets::doubleToStr(floatNumber->getValue()));
-	MAINLOG("Type:" + stringValue->getType() + "\t Value:" + stringValue->getValue());
-	MAINLOG("Type:" + token->getType() + "\t Value:");
-
-	SAFE_DELETE(integer);
-	SAFE_DELETE(floatNumber);
-	SAFE_DELETE(stringValue);
-	SAFE_DELETE(token);
-	SAFE_DELETE(assign);
-	// SAFE_DELETE(add);
 
 	MAINLOG("\n\n-------------------以下内容是进行语义生成----------------------");
 
