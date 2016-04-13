@@ -9,7 +9,6 @@
 #include <stack>
 #include <iostream>
 
-#include "RecordNode.h"
 #include "../../FiniteState/StateMachine.h"
 
 using namespace XpLib;

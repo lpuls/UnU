@@ -8,6 +8,8 @@
 #include "ASTOperatorNode.h"
 #include "ASTBodyNode.h"
 #include "ASTStructNode.h"
+#include "ASTParamNode.h"
+#include "ASTFunctionNode.h"
 
 #include "../../Toolsets.h"
 #include "../UnUCompile.h"
@@ -71,5 +73,15 @@ ASTNode * UnUCompiler::ASTNodeCreater::create(std::string word, std::string word
 		result->setValueType(wordValue);
 		return result;
 	}
-	return new ASTNode();
+	else if (AST_PARAMS == wordValue)  // 用来生成参数列表
+	{
+		auto result = new ASTParamNode();
+		return result;
+	}
+	else if (AST_FUNCTION == wordValue) // 用来生成函数
+	{
+		auto result = new ASTFunctionNode();
+		return result;
+	}
+	return nullptr;
 }

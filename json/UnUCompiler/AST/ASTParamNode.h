@@ -17,6 +17,7 @@ namespace UnUCompiler
 {
 	class ASTParamNode : public ASTNode
 	{
+		friend class ASTNodeCreater;
 	private:
 		/*
 		* 功能：构造函数

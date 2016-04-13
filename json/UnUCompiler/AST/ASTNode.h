@@ -36,6 +36,13 @@ namespace UnUCompiler
 
 	protected:
 		/*
+		* 功能：指向父节点的指针，主要用于指向ASTBodyNode
+		* 类型：ASTNode*
+		* 描述：无
+		*/
+		DEFINE_PROTECTED(ASTNode*, _parent, Parent);
+
+		/*
 		* 功能：构造函数
 		* 参数：无
 		* 返回：无

@@ -17,6 +17,7 @@ namespace UnUCompiler
 {
 	class ASTFunctionNode : public ASTNode
 	{
+		friend class ASTNodeCreater;
 	private:
 		/*
 		* 功能：构造函数
@@ -25,13 +26,6 @@ namespace UnUCompiler
 		* 描述：无
 		*/
 		ASTFunctionNode ();
-
-		/*
-		* 功能：函数名
-		* 类型：ASTTokenNode*
-		* 描述：无
-		*/
-		DEFINE_PROTECTED(ASTTokenNode*, _funtion, Function);
 
 		/*
 		* 功能：参数列表

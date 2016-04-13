@@ -12,6 +12,7 @@ namespace UnUCompiler
 {
 
 #define CreateASTNode(type, value, nodeType) dynamic_cast<type>(ASTNodeCreater::create(value, nodeType))
+#define Transtion(type, node) dynamic_cast<type>(node)
 
 	// 通用数据
 	const std::string JsonPath = "Jsons";
@@ -30,10 +31,12 @@ namespace UnUCompiler
 	const std::string AST_BOOL_OPERATOR = "bool_operator";
 	const std::string AST_VALUE_OPERATOR = "value_operator";
 	const std::string AST_ASSIGN = "assign";
-	const std::string AST_BODY = "body";
-	const std::string AST_IF = "if";
-	const std::string AST_LOOP = "loop";
-	const std::string AST_FUNCTION = "class";
+	const std::string AST_BODY = "zone_left";
+	const std::string AST_BODY_END = "zone_right";
+	const std::string AST_IF = "IF";
+	const std::string AST_LOOP = "WHILE";
+	const std::string AST_FUNCTION = "FUHTION";
+	const std::string AST_PARAMS = "spearated";
 
 	// 语义分析时返回的结果
 	const std::string PowerTablePath = JsonPath + "/PowerTable.json";

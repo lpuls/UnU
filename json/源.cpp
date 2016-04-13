@@ -21,8 +21,10 @@
 #include "UnUCompiler\AST\ASTOperatorNode.h"
 #include "UnUCompiler\AST\ASTBodyNode.h"
 #include "UnUCompiler\AST\ASTStructNode.h"
+#include "UnUCompiler\AST\ASTFunctionNode.h"
 
 #include "UnUCompiler\Semantic\PowerTable.h"
+#include "UnUCompiler\Semantic\Semantic.h"
 
 #include "json\json.h"
 
@@ -41,12 +43,13 @@ int main()
 	Toolsets::getInstance()->addSwitch("Parser");
 	Toolsets::getInstance()->addSwitch("AST");
 	Toolsets::getInstance()->addSwitch("PowerTable");
+	Toolsets::getInstance()->addSwitch("Semantic");
 
 	std::vector<std::string> inputList;
 	std::vector<std::string> wordValueList;
 	std::vector<std::string> wordList;
 
-	
+
 	auto code = Toolsets::getInstance()->reader("Jsons/unu.unu")[0];
 	MAINLOG(code);
 	for (auto item : code)
@@ -61,16 +64,22 @@ int main()
 	MAINLOG("\n-------------------以下内容是进行词法法分析----------------------");
 	Lex sm("Jsons/Lex.json");
 	sm.setInputList(&inputList);
-	sm.run();
-	MAINLOG(sm.getCurrent()->getState());
-	Word temp;
-
-	for (unsigned int i = 0; i < sm.getWordIterator().total(); i++)
+	if (SUCCESS == sm.run())
 	{
-		temp = sm.getWordIterator().get(i);
-		MAINLOG(temp.getWord() + "\t" + temp.getWordValue());
-		wordValueList.push_back(sm.getWordIterator().get(i).getWordValue());
-		wordList.push_back(sm.getWordIterator().get(i).getWord());
+		Word temp;
+		for (unsigned int i = 0; i < sm.getWordIterator().total(); i++)
+		{
+			temp = sm.getWordIterator().get(i);
+			MAINLOG(temp.getWord() + "\t" + temp.getWordValue());
+			wordValueList.push_back(sm.getWordIterator().get(i).getWordValue());
+			wordList.push_back(sm.getWordIterator().get(i).getWord());
+		}
+	}
+	else
+	{
+		MAINLOG("词法分析失败 !!!");
+		system("pause");
+		return 0;
 	}
 
 	MAINLOG("-------------------以下内容是进行语法分析----------------------");
@@ -79,18 +88,38 @@ int main()
 	pr.setWordIterator(wordList);
 	auto result = pr.run();
 	if (-1 == result)
+	{
 		MAINLOG("Parser Success !!!");
+	}
+	else
+	{
+		MAINLOG("语法分析失败 !!!");
+		system("pause");
+		return 0;
+	}
+
+	MAINLOG("-------------------以下内容是进行语义分析----------------------");
+	Semantic se;
+	auto mainBody = se.analysis(sm.getWordIterator());
+	if (mainBody)
+	{
+		MAINLOG("语义分析成功 !!!");
+	}
+	else
+	{
+		MAINLOG("语义分析失败 !!!");
+		system("pause");
+		return 0;
+	}
+
 
 	MAINLOG("-------------------以下内容是进行AST生成----------------------");
-	auto tokenI = CreateASTNode(ASTTokenNode*, "a", AST_TOKEN);
-	auto operatorI = CreateASTNode(ASTOperatorNode*, "+", AST_VALUE_OPERATOR);
-	auto integerI = CreateASTNode(ASTIntegerNode*, "10", AST_INTEGER);
-	operatorI->setLeft(tokenI);
-	operatorI->setRight(integerI);
-	MAINLOG("Check Result : " + Toolsets::intToStr(operatorI->check()));
 
+	MAINLOG("Check Result : " + Toolsets::intToStr(mainBody->check()));
+	
+	
+	SAFE_DELETE(mainBody);
 
-	MAINLOG("\n\n-------------------以下内容是进行语义生成----------------------");
 
 	Toolsets::releaseInstance();
 

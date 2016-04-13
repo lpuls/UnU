@@ -1,0 +1,1 @@
+{"keys":["assign","value_operator","bool_operator","priority_left","priority_right","zone_left","zone_right","spearated","end","IF","WHILE","FUHTION"],"power":{"assign":65,"value_operator":60,"bool_operator":70,"priority_left":75,"priority_right":55,"zone_left":100,"zone_right":54,"spearated":56,"end":101,"IF":80,"WHILE":80,"FUHTION":95}}

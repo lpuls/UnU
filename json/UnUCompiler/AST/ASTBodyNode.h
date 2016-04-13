@@ -10,6 +10,7 @@
 
 #include "ASTNode.h"
 #include "../../Tools.h"
+#include "ASTTokenTable.h"
 
 
 namespace UnUCompiler
@@ -27,6 +28,13 @@ namespace UnUCompiler
 		ASTBodyNode();
 
 	protected:
+		/*
+		* 功能：无
+		* 类型：无
+		* 描述：无
+		*/
+		ASTTokenTable *_tokenTable;
+
 		/*
 		* 功能：结构内的所有AST节点列表
 		* 类型：std::vector<ASTNode*>
@@ -59,6 +67,13 @@ namespace UnUCompiler
 		*/
 		int check();
 
+		/*
+		* 功能：提供给子节点查看是否存在变量名
+		* 参数：std::String 变量名
+		* 返回：bool 检测结果
+		* 描述：无
+		*/
+		bool isExit(std::string token);
 	};
 
 }
