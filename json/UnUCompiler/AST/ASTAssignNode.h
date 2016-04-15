@@ -45,6 +45,14 @@ namespace UnUCompiler
 		*/
 		int check();
 
+		/*
+		* 功能：打印结构
+		* 参数：无
+		* 返回：无
+		* 描述：无
+		*/
+		void print();
+
 	public:
 		/*
 		* 功能：析构函数

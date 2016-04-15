@@ -28,3 +28,10 @@ int UnUCompiler::ASTStructNode::check()
 		return UNKNOW_BOOL;
 	}
 }
+
+void UnUCompiler::ASTStructNode::print()
+{
+	ASTNode::print();
+	this->_left->print();
+	this->_right->print();
+}

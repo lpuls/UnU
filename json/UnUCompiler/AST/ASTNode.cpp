@@ -12,6 +12,11 @@ int UnUCompiler::ASTNode::check()
 	return SUCCESS;
 }
 
+void UnUCompiler::ASTNode::print()
+{
+	std::cout << this->_valueType << std::endl;
+}
+
 UnUCompiler::ASTNode::ASTNode()
 {
 }

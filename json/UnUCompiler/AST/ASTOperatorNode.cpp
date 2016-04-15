@@ -56,3 +56,10 @@ int UnUCompiler::ASTOperatorNode::check()
 	}
 	return TYPE_ERROR;
 }
+
+void UnUCompiler::ASTOperatorNode::print()
+{
+	ASTExpNode::print();
+	this->_left->print();
+	this->_right->print();
+}

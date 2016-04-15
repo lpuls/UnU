@@ -74,6 +74,14 @@ namespace UnUCompiler
 		* 描述：无
 		*/
 		bool isExit(std::string token);
+
+		/*
+		* 功能：打印结构
+		* 参数：无
+		* 返回：无
+		* 描述：无
+		*/
+		void print();
 	};
 
 }

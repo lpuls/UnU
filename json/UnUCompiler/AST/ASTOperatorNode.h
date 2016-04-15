@@ -82,6 +82,14 @@ namespace UnUCompiler
 		* 描述：虚方法，用来检查每一个节点的语义是否正确
 		*/
 		int check();
+
+		/*
+		* 功能：打印结构
+		* 参数：无
+		* 返回：无
+		* 描述：无
+		*/
+		void print();
 		
 	};
 }

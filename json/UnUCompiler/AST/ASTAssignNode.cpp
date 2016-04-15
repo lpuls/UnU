@@ -69,6 +69,13 @@ int UnUCompiler::ASTAssignNode::check()
 	return TYPE_ERROR;
 }
 
+void UnUCompiler::ASTAssignNode::print()
+{
+	ASTExpNode::print();
+	this->__left->print();
+	this->__right->print();
+}
+
 UnUCompiler::ASTAssignNode::~ASTAssignNode()
 {
 	SAFE_DELETE(this->__left);

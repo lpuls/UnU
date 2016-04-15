@@ -14,13 +14,15 @@
 #include "../AST/ASTParamNode.h"
 #include "../AST/ASTFunctionNode.h"
 #include "../AST/ASTNodeCreater.h"
+#include "../AST/ASTStandNode.h"
 
 #include "../../Toolsets.h"
 
 using namespace UnUCompiler;
 
-
 #define SEMLOG(var) XpLib::Toolsets::getInstance()->log(var, "Semantic");
+#define CALCULATION(var, nodeType) return CreateASTNode(ASTNode*, var, nodeType);
+
 
 Semantic::Semantic()
 {
@@ -33,73 +35,65 @@ Semantic::~Semantic()
 
 ASTNode * UnUCompiler::Semantic::analysis(WordIterator wordIterator)
 {
-	Word word;
-	ASTNode *temp = nullptr;
-	auto mainBody = CreateASTNode(ASTBodyNode*, "main", AST_BODY);
-	this->__operatorStack.push(mainBody);
+	// 将所有节点生成为AST语法树节点
 	for (int i = 0; i < wordIterator.total(); i++)
 	{
-		word = wordIterator.get(i);
-		// 数值，加入数值栈
-		if ("token" == word.getWordValue() || "string" == word.getWordValue() || "integer" == word.getWordValue() || "float" == word.getWordValue())
+		// 数值入栈
+		if (PowerTable::getPowerByKey(wordIterator.get(i).getWordValue()) < 0)
 		{
-			// 仿错误机制
-			if (! this->pushNodeIntoValueStack(word))
-			{
-				SEMLOG("无效的数值");
-				return nullptr;
-			}
-			SEMLOG("将数值入栈：" + word.getWordValue());
+			this->pushNodeIntoValueStack__(wordIterator.get(i));
 		}
-		else  // 非数值，要进数值栈进行操作
+		else
 		{
-			temp = this->__operatorStack.top();
-			// 若新的节点优先级大于等于旧的节点，则一直归约至大于等于自身的节点
-			// SEMLOG(XpLib::Toolsets::intToStr(PowerTable::getPowerByKey(temp->getValueType())));
-			// SEMLOG(XpLib::Toolsets::intToStr(PowerTable::getPowerByKey(word.getWordValue())));
-			if (PowerTable::getPowerByKey(temp->getValueType()) <= PowerTable::getPowerByKey(word.getWordValue()))
-			{					  
-				int timer = 1;
-				do
-				{
-					SEMLOG("接收到：" + word.getWordValue() + " 开始进行归约");
-					// 进行归约
-					if (reduction())
-					{
-						SEMLOG("完成" + XpLib::Toolsets::intToStr(timer++) + "次归约");
-						// this->__operatorStack.pop();
-						
-					}  // end 进行归约
-					if (this->__operatorStack.size() > 1) { temp = this->__operatorStack.top(); }
-					else { break; }
-				} while (PowerTable::getPowerByKey(temp->getValueType()) <= PowerTable::getPowerByKey(word.getWordValue()));
-				SEMLOG("归约结束");
-				// 除去;}和）外，都重新压入栈
-				if (";" != word.getWord() && "}" != word.getWord() && ")" != word.getWord())
-				{
-					if (!this->pushNodeIntoOperatoreStack(word))
-					{
-						SEMLOG("无效的操作符");
-						return nullptr;
-					}
-				}  // end 除去;}和）外，都重新压入栈
-			}
-			else  // 旧节点大于新的节点，则将新节点入栈
+			// 特殊节点，如{}这种前后必需相对应的节点	
+			if (0 == this->__operatorStack.size()  // 比较与栈顶节点的权值，权值大的先运算
+				|| PowerTable::getPowerByKey(wordIterator.get(i).getWordValue()) > PowerTable::getPowerByKey(this->__operatorStack.top()->getValueType()))
 			{
-				if (!this->pushNodeIntoOperatoreStack(word))
-				{
-					SEMLOG("无效的操作符");
+				// 新节点比栈顶节点权值大,入栈
+				this->pushNodeIntoOperatorStack__(wordIterator.get(i));
+			}
+			else  // 新的点节不比栈顶节点权值大，对栈顶节点进行归约
+			{
+				if (Semantic::CONTINUE != this->reduction(wordIterator.get(i)))
 					return nullptr;
-				}
-				SEMLOG("将操作符入栈：" + word.getWordValue());
 			}
 		}
 	}
-	this->classification();
+	// 收尾,先检测是否所的有操作符都使用过了，再将生成的所有值压入主函数代码段
+	if (!this->__operatorStack.empty())
+	{
+		// 收层时，压入一个极小的值
+		this->reduction(Word("over", "token"));
+		this->__operatorStack.pop();
+	}
+	auto mainBody = CreateASTNode(ASTBodyNode*, "main", AST_BODY);
+	while (!this->__valueStack.empty())
+	{
+		mainBody->addChild(this->__valueStack.top());
+		this->__valueStack.pop();
+	}
 	return mainBody;
 }
 
-bool UnUCompiler::Semantic::pushNodeIntoValueStack(Word word)
+bool UnUCompiler::Semantic::pushNodeIntoOperatorStack__(Word word)
+{
+	if ("{" != word.getWord())
+	{
+		auto value = CreateASTNode(ASTNode*, word.getWord(), word.getWordValue());
+		if (value)
+		{
+			this->__operatorStack.push(value);
+		}
+	}
+	// 括号类操作符要做特殊处理，在符号栈中添加标记
+	if ("}" == word.getWord() || "{" == word.getWord())
+	{
+		this->__valueStack.push(CreateASTNode(ASTStandNode*, "stand", AST_STAND));
+	}
+	return false;
+}
+
+bool UnUCompiler::Semantic::pushNodeIntoValueStack__(Word word)
 {
 	auto value = CreateASTNode(ASTNode*, word.getWord(), word.getWordValue());
 	if (value)
@@ -110,135 +104,272 @@ bool UnUCompiler::Semantic::pushNodeIntoValueStack(Word word)
 	return false;
 }
 
-bool UnUCompiler::Semantic::pushNodeIntoOperatoreStack(Word word)
+int UnUCompiler::Semantic::merge(Word word)
 {
-	auto value = CreateASTNode(ASTNode*, word.getWord(), word.getWordValue());
-	if (value)
+	std::string type = "";
+	ASTNode *item = nullptr;
+
+	// 遍历所有节点，
+	item = this->__operatorStack.top();
+	type = item->getValueType();
+	// 控制结构节点
+	if (AST_IF == type || AST_LOOP == type)
 	{
-		this->__operatorStack.push(value);
-		return true;
+		// 生成控制结构
+		auto expNode = Transtion(ASTStructNode*, item);
+		auto rightNode = Transtion(ASTBodyNode*, this->__valueStack.top()); this->__valueStack.pop();
+		auto leftNode = Transtion(ASTOperatorNode*, this->__valueStack.top()); this->__valueStack.pop();
+		expNode->setLeft(leftNode);
+		expNode->setRight(rightNode);
+		this->__valueStack.push(expNode);
 	}
-	return false;
-}
-
-bool UnUCompiler::Semantic::reduction()
-{
-	// 取出数值节点
-	auto valueI = this->__valueStack.top();
-	this->__valueStack.pop();
-	auto valueII = this->__valueStack.top();
-	this->__valueStack.pop();
-
-	// 取出操作符节点
-	auto operatorNode = this->__operatorStack.top();
-	this->__operatorStack.pop();
-
-	SEMLOG("归约符号：" + operatorNode->getValueType() + "    归约值：" + valueI->getValueType() + "\t" + valueII->getValueType());
-
-	// 根据操作符类型，进行合并
-	if (AST_BOOL_OPERATOR == operatorNode->getValueType()	  // 处理操作符，赋值
-		|| AST_VALUE_OPERATOR == operatorNode->getValueType()
-		|| AST_ASSIGN == operatorNode->getValueType())
+	else if (AST_VALUE_OPERATOR == type || AST_BOOL_OPERATOR == type)
 	{
-		auto expI = Transtion(ASTExpNode*, valueI);
-		auto expII = Transtion(ASTExpNode*, valueII);
-		if (AST_BOOL_OPERATOR == operatorNode->getValueType())
+		auto expNode = Transtion(ASTOperatorNode*, item);
+		// 数值运算中，考虚+ - * /之间的优先级
+		auto expPower = PowerTable::getPowerByKey(expNode->getOperator());
+		auto wordPower = PowerTable::getPowerByKey(word.getWord());
+		if (AST_VALUE_OPERATOR == type && expPower < wordPower)
+			return Semantic::SKIP;
+		// 对运算符结点进行归约
+		auto rightNode = Transtion(ASTExpNode*, this->__valueStack.top()); this->__valueStack.pop();
+		auto leftNode = Transtion(ASTExpNode*, this->__valueStack.top()); this->__valueStack.pop();
+		expNode->setLeft(leftNode);
+		expNode->setRight(rightNode);
+		// 将能计算结果计算出来
+		auto result = this->calculation(expNode);
+		if (result)
 		{
-			auto tempNode = Transtion(ASTOperatorNode*, operatorNode);
-			tempNode->setLeft(expI);
-			tempNode->setRight(expII);
-			this->__valueStack.push(tempNode);
+			this->__valueStack.push(result);
+			SAFE_DELETE(expNode);
 		}
-		else if (AST_VALUE_OPERATOR == operatorNode->getValueType())
+		else { this->__valueStack.push(expNode); }
+	}
+	else if (AST_BODY == type)
+	{
+		this->specialBracket(word);
+	}
+	else if (AST_STAND == type)
+	{
+		this->__valueStack.push(CreateASTNode(ASTStandNode*, "stand", AST_STAND));
+	}
+	else if (AST_ASSIGN == type)  // 赋值节点
+	{
+		auto expNode = Transtion(ASTAssignNode*, item);
+		auto rightNode = Transtion(ASTExpNode*, this->__valueStack.top()); this->__valueStack.pop();
+		auto leftNode = Transtion(ASTTokenNode*, this->__valueStack.top()); this->__valueStack.pop();
+		
+		if (AST_INTEGER == rightNode->getValueType())
 		{
-			auto tempNode = Transtion(ASTOperatorNode*, operatorNode); 
-			tempNode->setLeft(expI);
-			tempNode->setRight(expII);
-			this->__valueStack.push(tempNode);
+			leftNode->setValue(XpLib::Toolsets::intToStr(Transtion(ASTIntegerNode*, rightNode)->getValue()));
+			leftNode->setType(AST_INTEGER);
+			this->__valueStack.push(leftNode);
+			expNode->setRight(rightNode);
+			SAFE_DELETE(expNode);
 		}
-		else if (AST_ASSIGN == operatorNode->getValueType())
+		else if (AST_FLOAT == rightNode->getValueType())
 		{
-			auto tempNode = Transtion(ASTAssignNode*, operatorNode);
-			tempNode->setLeft(Transtion(ASTTokenNode*, valueII));
-			tempNode->setRight(expI);
-			this->__valueStack.push(tempNode);
+			leftNode->setValue(XpLib::Toolsets::doubleToStr(Transtion(ASTFloatNode*, rightNode)->getValue()));
+			leftNode->setType(AST_FLOAT);
+			this->__valueStack.push(leftNode);
+			expNode->setRight(rightNode);
+			SAFE_DELETE(expNode);
+		}
+		else if (AST_STRING == rightNode->getValueType())
+		{
+			leftNode->setValue(Transtion(ASTStringNode*, rightNode)->getValue());
+			leftNode->setType(AST_STRING);
+			this->__valueStack.push(leftNode);
+			expNode->setRight(rightNode);
+			SAFE_DELETE(expNode);
+		}
+		else if (AST_TOKEN == rightNode->getValueType())
+		{
+			expNode->setLeft(leftNode);
+			this->__valueStack.push(rightNode);
+			SAFE_DELETE(expNode);
 		}
 		else
-			return false;
-	}
-	else if (AST_IF == operatorNode->getValueType() || AST_LOOP == operatorNode->getValueType())  // 循环结构和判断结构
-	{
-		auto tempNode = Transtion(ASTStructNode*, operatorNode);
-		this->__valueStack.push(tempNode);
-	}
-	else if (AST_BODY == operatorNode->getValueType())  // 生成代码结构节点
-	{
-		auto tempNode = Transtion(ASTBodyNode*, operatorNode);
-		this->__valueStack.push(tempNode);
-	}
-	else if (AST_BODY_END == operatorNode->getValueType())  // 合并代码结构
-	{
-		auto nodeList = this->getMergeList(AST_BODY);
-		auto bodyNode = Transtion(ASTBodyNode*, nodeList[nodeList.size() - 1]);
-		for (int i = nodeList.size() - 1; i >= 0; i--)
 		{
-			bodyNode->addChild(nodeList[i]);
+			expNode->setLeft(leftNode);
+			expNode->setRight(rightNode);
+			// 做为一个数值，重新压栈
+			this->__valueStack.push(expNode);
 		}
 	}
-
-	return true;
+	else  // 没有对应节点，失败
+	{
+		return Semantic::FAILED;
+	}
+	// 括号类操作符要做特殊处理，在符号栈中添加标记
+	if ("}" == word.getWord())
+	{
+		this->__valueStack.push(CreateASTNode(ASTStandNode*, "stand", AST_STAND));
+	}
+	return Semantic::CONTINUE;
 }
 
-std::vector<ASTNode*> UnUCompiler::Semantic::getMergeList(std::string astType)
+int UnUCompiler::Semantic::reduction(Word word)
 {
-	ASTNode *tempNode = nullptr;
-	// 将当前节点到目标节点都取出
-	std::vector<ASTNode*> tempList;
+	SEMLOG("得到节点: " + word.getWord() + " 开始进行归约");
+	int expPower, wordPower, result;
+	// 循环计算直至栈顶的权值比当前词汇权值小
 	while (true)
 	{
-		tempNode = this->__valueStack.top();
-		tempList.push_back(tempNode);
-		if (astType == tempNode->getValueType())
-		{																										 
+		result = this->merge(word);
+		if (Semantic::CONTINUE == result)
+		{
+			SEMLOG("本次操作成功");
+			this->__operatorStack.pop();
+			if (this->__operatorStack.size() == 0)
+				break;
+			expPower = PowerTable::getPowerByKey(this->__operatorStack.top()->getValueType());
+			wordPower = PowerTable::getPowerByKey(word.getWord());
+			if (wordPower > expPower)
+				break;
+		}
+		else if (Semantic::SKIP == result)
+		{
+			SEMLOG("本次操作跳过");
 			break;
 		}
 		else
 		{
-			this->__valueStack.pop();
+			SEMLOG("本次操作失败");
+			return Semantic::FAILED;
 		}
+
 	}
-	return tempList;
+	this->pushNodeIntoOperatorStack__(word);
+	return Semantic::CONTINUE;
 }
 
-void UnUCompiler::Semantic::classification()
+void UnUCompiler::Semantic::specialBracket(Word word)
 {
-	ASTNode *temp = nullptr;
-	std::vector<ASTNode*> nodeList;
-	// 取出所有节点，放入列表中
-	while (this->__valueStack.size() > 0)
+	std::vector<ASTNode*> store;
+	std::vector<ASTNode*> tempList;
+	auto tempNode = this->__valueStack.top();
+	// 找到第一个标记
+	while (AST_STAND != tempNode->getValueType())
 	{
-		temp = this->__valueStack.top();
+		store.push_back(tempNode);
 		this->__valueStack.pop();
-		nodeList.push_back(temp);
+		tempNode = this->__valueStack.top();
 	}
-	// 遍历节点，根据类型，处理
-	int position = 0;
-	auto mainBody = Transtion(ASTBodyNode*, nodeList[nodeList.size() - 1]);
-	std::string nodeType = "";
-	while (position < nodeList.size())
+	this->__valueStack.pop();
+	// 找到第二个标记
+	tempNode = this->__valueStack.top();
+	while (AST_STAND != tempNode->getValueType())
 	{
-		temp = nodeList[position++];
-		nodeType = temp->getValueType();
-		// 若得到的是循环结构或着判断结构,读取后面的判断结构和主体结构
-		if (AST_IF == nodeType || AST_LOOP == nodeType)
+		tempList.push_back(tempNode);
+		this->__valueStack.pop();
+		tempNode = this->__valueStack.top();
+	}
+	this->__valueStack.pop();
+	// 生成代码段，将代码放入其中
+	auto body = CreateASTNode(ASTBodyNode*, "body", AST_BODY);
+	for (auto item : tempList)
+		body->addChild(item);
+	// 做为一个数值，重新压栈
+	this->__valueStack.push(body);
+	SEMLOG("over");
+}
+
+ASTNode * UnUCompiler::Semantic::calculation(ASTNode * node)
+{
+	auto expNode = Transtion(ASTOperatorNode*, node);
+	auto leftNode = expNode->getLeft();
+	auto rightNode = expNode->getRight();
+	if (SUCCESS == expNode->check() && AST_TOKEN != leftNode->getValueType() && AST_TOKEN != rightNode->getValueType())
+	{
+		if (AST_INTEGER == leftNode->getValueType())
 		{
-			auto structNode = Transtion(ASTStructNode*, temp);
-			// bool表达式
-			structNode->setLeft(Transtion(ASTOperatorNode*, nodeList[position - 1]));
-			// 代码主体
-			structNode->setRight(Transtion(ASTBodyNode*, nodeList[position - 2]));
-			// 将当前结果设为主体节点的子节点
-			mainBody->addChild(structNode);
+			int result;
+			if ("+" == expNode->getOperator())
+			{
+				result = Transtion(ASTIntegerNode*, leftNode)->getValue() + Transtion(ASTIntegerNode*, rightNode)->getValue();
+			}
+			else if ("-" == expNode->getOperator())
+			{
+				result = Transtion(ASTIntegerNode*, leftNode)->getValue() - Transtion(ASTIntegerNode*, rightNode)->getValue();
+			}
+			else if ("*" == expNode->getOperator())
+			{
+				result = Transtion(ASTIntegerNode*, leftNode)->getValue() * Transtion(ASTIntegerNode*, rightNode)->getValue();
+			}
+			else if ("/" == expNode->getOperator())
+			{
+				result = Transtion(ASTIntegerNode*, leftNode)->getValue() / Transtion(ASTIntegerNode*, rightNode)->getValue();
+			}
+			else if ("==" == expNode->getOperator())
+			{
+				result = Transtion(ASTIntegerNode*, leftNode)->getValue() == Transtion(ASTIntegerNode*, rightNode)->getValue();
+			}
+			else if (">=" == expNode->getOperator())
+			{
+				result = Transtion(ASTIntegerNode*, leftNode)->getValue() >= Transtion(ASTIntegerNode*, rightNode)->getValue();
+			}
+			else if ("<=" == expNode->getOperator())
+			{
+				result = Transtion(ASTIntegerNode*, leftNode)->getValue() <= Transtion(ASTIntegerNode*, rightNode)->getValue();
+			}
+			CALCULATION(XpLib::Toolsets::intToStr(result), AST_INTEGER);
+		}
+		else if (AST_FLOAT == leftNode->getValueType())
+		{
+			double result;
+			if ("+" == expNode->getOperator())
+			{
+				result = Transtion(ASTFloatNode*, leftNode)->getValue() + Transtion(ASTFloatNode*, rightNode)->getValue();
+			}
+			else if ("-" == expNode->getOperator())
+			{
+				result = Transtion(ASTFloatNode*, leftNode)->getValue() - Transtion(ASTFloatNode*, rightNode)->getValue();
+			}
+			else if ("*" == expNode->getOperator())
+			{
+				result = Transtion(ASTFloatNode*, leftNode)->getValue() * Transtion(ASTFloatNode*, rightNode)->getValue();
+			}
+			else if ("/" == expNode->getOperator())
+			{
+				result = Transtion(ASTFloatNode*, leftNode)->getValue() / Transtion(ASTFloatNode*, rightNode)->getValue();
+			}
+			else if ("==" == expNode->getOperator())
+			{
+				result = Transtion(ASTFloatNode*, leftNode)->getValue() == Transtion(ASTFloatNode*, rightNode)->getValue();
+			}
+			else if (">=" == expNode->getOperator())
+			{
+				result = Transtion(ASTFloatNode*, leftNode)->getValue() >= Transtion(ASTFloatNode*, rightNode)->getValue();
+			}
+			else if ("<=" == expNode->getOperator())
+			{
+				result = Transtion(ASTFloatNode*, leftNode)->getValue() <= Transtion(ASTFloatNode*, rightNode)->getValue();
+			}
+			CALCULATION(XpLib::Toolsets::doubleToStr(result), AST_FLOAT);
+		}
+		else if (AST_STRING == leftNode->getValueType())
+		{
+			std::string result = "\"";
+			if ("+" == expNode->getOperator())
+			{
+				result += Transtion(ASTStringNode*, leftNode)->getValue() + Transtion(ASTStringNode*, rightNode)->getValue();
+			}
+			else if ("==" == expNode->getOperator())
+			{
+				result += Transtion(ASTStringNode*, leftNode)->getValue() == Transtion(ASTStringNode*, rightNode)->getValue();
+			}
+			else if (">=" == expNode->getOperator())
+			{
+				result += Transtion(ASTStringNode*, leftNode)->getValue() >= Transtion(ASTStringNode*, rightNode)->getValue();
+			}
+			else if ("<=" == expNode->getOperator())
+			{
+				result += Transtion(ASTStringNode*, leftNode)->getValue() <= Transtion(ASTStringNode*, rightNode)->getValue();
+			}
+			result += "\"";
+			CALCULATION(result, AST_STRING);
 		}
 	}
+	return nullptr;
 }

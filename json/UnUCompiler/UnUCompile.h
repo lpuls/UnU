@@ -31,8 +31,8 @@ namespace UnUCompiler
 	const std::string AST_BOOL_OPERATOR = "bool_operator";
 	const std::string AST_VALUE_OPERATOR = "value_operator";
 	const std::string AST_ASSIGN = "assign";
-	const std::string AST_BODY = "zone_left";
-	const std::string AST_BODY_END = "zone_right";
+	const std::string AST_BODY = "zone_right";
+	const std::string AST_STAND = "zone_left";
 	const std::string AST_IF = "IF";
 	const std::string AST_LOOP = "WHILE";
 	const std::string AST_FUNCTION = "FUHTION";

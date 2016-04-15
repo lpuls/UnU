@@ -34,6 +34,14 @@ namespace UnUCompiler
 		*/
 		virtual int check();
 
+		/*
+		* 功能：打印结构
+		* 参数：无
+		* 返回：无
+		* 描述：无
+		*/
+		virtual void print();
+
 	protected:
 		/*
 		* 功能：指向父节点的指针，主要用于指向ASTBodyNode

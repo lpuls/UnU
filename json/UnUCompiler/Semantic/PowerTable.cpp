@@ -46,6 +46,7 @@ int UnUCompiler::PowerTable::getPowerByKey(std::string key)
 	auto result = PowerTable::__powerTable.find(key);
 	if (result != PowerTable::__powerTable.end())
 	{
+		PTLOG(key + "\t" + Toolsets::intToStr(PowerTable::__powerTable[key]));
 		return PowerTable::__powerTable[key];
 	}
 	return PowerTable::ERROR;

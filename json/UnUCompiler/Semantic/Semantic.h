@@ -13,6 +13,7 @@
 #include "../Lex/Word.h"
 #include "../../Tools.h"
 #include "../AST/ASTNode.h"
+#include "../AST/ASTBodyNode.h"
 #include "../Lex/WordLterator.h"
 
 namespace UnUCompiler
@@ -46,12 +47,40 @@ namespace UnUCompiler
 
 	private:
 		/*
+		* 功能：用来记识合并结果
+		* 类型：const int
+		* 描述：成功，继续下一步
+		*/
+		const int CONTINUE = -1;
+
+		/*
+		* 功能：用来记识合并结果
+		* 类型：const int
+		* 描述：本次不合并，跳过
+		*/
+		const int SKIP = 1;
+
+		/*
+		* 功能：用来记识合并结果
+		* 类型：const int
+		* 描述：本次不做任何操作
+		*/
+		const int DO_NOTHING = 1;
+
+		/*
+		* 功能：用来记识合并结果
+		* 类型：const int
+		* 描述：失败
+		*/
+		const int FAILED = 2;
+
+		/*
 		* 功能：符号栈
 		* 类型：std::stack<std::string>
 		* 描述：无
 		*/
 		DEFINE_PRIVATE_READ_ONLY(std::stack<ASTNode*>, __operatorStack, OperatorStack);
-		
+
 		/*
 		* 功能：数值栈
 		* 类型：std::stack<std::string>
@@ -60,44 +89,52 @@ namespace UnUCompiler
 		DEFINE_PRIVATE_READ_ONLY(std::stack<ASTNode*>, __valueStack, ValueStack);
 
 		/*
+		* 功能：添加一个操作符节点进栈中
+		* 参数：Word 数值词汇
+		* 返回：bool 是否添加成功
+		* 描述：无
+		*/
+		bool pushNodeIntoOperatorStack__(Word word);
+
+		/*
 		* 功能：添加一个数值节点进数值栈中
 		* 参数：Word 数值词汇
 		* 返回：bool 是否添加成功
 		* 描述：无
 		*/
-		bool pushNodeIntoValueStack(Word word);
+		bool pushNodeIntoValueStack__(Word word);
 
 		/*
-		* 功能：添加一个运逄符节点进运算符栈中
-		* 参数：Word 数值词汇
-		* 返回：bool 是否添加成功
+		* 功能：将所有AST节点合并成树
+		* 参数：Word 词汇
+		* 返回：最后合并成的Body节点
 		* 描述：无
 		*/
-		bool pushNodeIntoOperatoreStack(Word word);
+		int merge(Word word);
 
 		/*
 		* 功能：归约
-		* 参数：无
-		* 返回：bool 是否归约成功
-		* 描述：无
-		*/
-		bool reduction();
-
-		/*
-		* 功能：合并当前节点到目标节点的所有AST节点
-		* 参数：std::string 目标节点类型
-		* 返回：bool 是否合并成功
-		* 描述：无
-		*/
-		std::vector<ASTNode*> getMergeList(std::string astType);
-
-		/*
-		* 功能：对节点分类，将节点合并进主结构
-		* 参数：无
+		* 参数：Word 词汇
 		* 返回：无
 		* 描述：无
 		*/
-		void classification();
+		int reduction(Word word);
+
+		/*
+		* 功能：特殊节点
+		* 参数：Word 读取到的特殊节点
+		* 返回：无
+		* 描述：用来匹配括号
+		*/
+		void specialBracket(Word word);
+
+		/*
+		* 功能：将操作符相关的内容进行计算
+		* 参数：ASTNode 要计算的操作符节点
+		* 返回：ASTNode 计算完后的节点
+		* 描述：无
+		*/
+		ASTNode* calculation(ASTNode *node);
 	};
 }
 

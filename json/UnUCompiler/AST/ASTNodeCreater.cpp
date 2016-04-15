@@ -10,6 +10,7 @@
 #include "ASTStructNode.h"
 #include "ASTParamNode.h"
 #include "ASTFunctionNode.h"
+#include "ASTStandNode.h"
 
 #include "../../Toolsets.h"
 #include "../UnUCompile.h"
@@ -41,6 +42,7 @@ ASTNode * UnUCompiler::ASTNodeCreater::create(std::string word, std::string word
 	else if (AST_TOKEN == wordValue)  // 生成Token
 	{
 		auto result = new ASTTokenNode();
+		result->setValue(word);
 		return result;
 	}
 	else if (AST_ASSIGN == wordValue)  // 生成赋值节点
@@ -60,6 +62,7 @@ ASTNode * UnUCompiler::ASTNodeCreater::create(std::string word, std::string word
 			result->setIsBool(true);
 		}
 		result->setValueType(wordValue);
+		result->setOperator(word);
 		return result;
 	}
 	else if (AST_BODY == wordValue)  // 生成结构节点
@@ -81,6 +84,11 @@ ASTNode * UnUCompiler::ASTNodeCreater::create(std::string word, std::string word
 	else if (AST_FUNCTION == wordValue) // 用来生成函数
 	{
 		auto result = new ASTFunctionNode();
+		return result;
+	}
+	else if (AST_STAND == wordValue)  // 用来生成标记节点
+	{
+		auto result = new ASTStandNode();
 		return result;
 	}
 	return nullptr;

@@ -49,7 +49,7 @@ int UnUCompiler::Lex::quit__()
 		this->__currentWord = "";
 		this->_current = this->_stateTable->getStarState();
 	}
-	else
+	else if (" " != this->_input)
 	{
 		this->__currentWord += this->_input;
 	}

@@ -47,3 +47,12 @@ bool UnUCompiler::ASTBodyNode::isExit(std::string token)
 	}
 	return false;
 }
+
+void UnUCompiler::ASTBodyNode::print()
+{
+	ASTNode::print();
+	for (auto item : this->__children)
+	{
+		item->print();
+	}
+}

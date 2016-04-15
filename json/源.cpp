@@ -112,9 +112,7 @@ int main()
 		return 0;
 	}
 
-
-	MAINLOG("-------------------以下内容是进行AST生成----------------------");
-
+	mainBody->print();
 	MAINLOG("Check Result : " + Toolsets::intToStr(mainBody->check()));
 	
 	
