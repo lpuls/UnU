@@ -23,14 +23,31 @@ void UnUCompiler::ASTBodyNode::addChild(ASTNode * child)
 	this->__children.push_back(child);
 }
 
+UnUCompiler::ASTNode * UnUCompiler::ASTBodyNode::getChild(unsigned int location)
+{
+	if (location >= 0 && location < this->__children.size())
+		return this->__children[location];
+	return nullptr;
+}
+
+unsigned int UnUCompiler::ASTBodyNode::getChildTotal()
+{
+	return this->__children.size();
+}
+
 int UnUCompiler::ASTBodyNode::check()
 {
 	int result;
 	for (auto item : this->__children)
 	{
-		result = item->check();
-		if (SUCCESS != result)
-			return result;
+		// 若不存在，则反回错误
+		if (item)
+		{
+			result = item->check();
+			if (SUCCESS != result)
+				return result;
+		}
+		else { return NULL_CHILD; }
 	}
 	return SUCCESS;
 }

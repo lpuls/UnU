@@ -15,6 +15,8 @@
 #include "../AST/ASTFunctionNode.h"
 #include "../AST/ASTNodeCreater.h"
 #include "../AST/ASTStandNode.h"
+#include "../AST/ASTOutputNode.h"
+#include "../AST/ASTInputNode.h"
 
 #include "../../Toolsets.h"
 
@@ -33,10 +35,10 @@ Semantic::~Semantic()
 {
 }
 
-ASTNode * UnUCompiler::Semantic::analysis(WordIterator wordIterator)
+ASTNode * UnUCompiler::Semantic::analysis(WordIterator wordIterator, unsigned int start, unsigned int end)
 {
 	// 将所有节点生成为AST语法树节点
-	for (int i = 0; i < wordIterator.total(); i++)
+	for (int i = start; i < end; i++)
 	{
 		// 数值入栈
 		if (PowerTable::getPowerByKey(wordIterator.get(i).getWordValue()) < 0)
@@ -45,7 +47,6 @@ ASTNode * UnUCompiler::Semantic::analysis(WordIterator wordIterator)
 		}
 		else
 		{
-			// 特殊节点，如{}这种前后必需相对应的节点	
 			if (0 == this->__operatorStack.size()  // 比较与栈顶节点的权值，权值大的先运算
 				|| PowerTable::getPowerByKey(wordIterator.get(i).getWordValue()) > PowerTable::getPowerByKey(this->__operatorStack.top()->getValueType()))
 			{
@@ -56,6 +57,37 @@ ASTNode * UnUCompiler::Semantic::analysis(WordIterator wordIterator)
 			{
 				if (Semantic::CONTINUE != this->reduction(wordIterator.get(i)))
 					return nullptr;
+				// 特殊节点，如{}这种前后必需相对应的节点
+				if ("{" == wordIterator.get(i).getWord())
+				{
+					this->__operatorStack.pop();
+					int endLocation = 0;
+					std::stack<std::string> brackets;
+					// 找出括号内的内容
+					for (endLocation = i; endLocation < end; endLocation++)
+					{
+						// 左括号入栈，右括号匹配
+						if ("{" == wordIterator.get(endLocation).getWord())
+						{
+							brackets.push("{");
+						}
+						else if ("}" == wordIterator.get(endLocation).getWord())
+						{
+							brackets.pop();
+							// 将匹配的括号出栈之后，检测栈是否为空，若是，则找到了目标位置
+							if (brackets.empty())
+								break;
+						}
+					}
+					// 对代码段进行分析
+					Semantic se;
+					auto codes = se.analysis(wordIterator, i + 1, endLocation);
+					this->__valueStack.push(codes);
+					// 对之前的内容进行归约
+					this->reduction(Word("over", "token"));
+					this->__operatorStack.pop();
+					i = endLocation;
+				}
 			}
 		}
 	}
@@ -77,19 +109,19 @@ ASTNode * UnUCompiler::Semantic::analysis(WordIterator wordIterator)
 
 bool UnUCompiler::Semantic::pushNodeIntoOperatorStack__(Word word)
 {
-	if ("{" != word.getWord())
-	{
+	// if ("{" != word.getWord())
+	// {
 		auto value = CreateASTNode(ASTNode*, word.getWord(), word.getWordValue());
 		if (value)
 		{
 			this->__operatorStack.push(value);
 		}
-	}
+	// }
 	// 括号类操作符要做特殊处理，在符号栈中添加标记
-	if ("}" == word.getWord() || "{" == word.getWord())
-	{
-		this->__valueStack.push(CreateASTNode(ASTStandNode*, "stand", AST_STAND));
-	}
+	// if ("}" == word.getWord() || "{" == word.getWord())
+	// {
+	//	this->__valueStack.push(CreateASTNode(ASTStandNode*, "stand", AST_STAND));
+	// }
 	return false;
 }
 
@@ -118,12 +150,12 @@ int UnUCompiler::Semantic::merge(Word word)
 		// 生成控制结构
 		auto expNode = Transtion(ASTStructNode*, item);
 		auto rightNode = Transtion(ASTBodyNode*, this->__valueStack.top()); this->__valueStack.pop();
-		auto leftNode = Transtion(ASTOperatorNode*, this->__valueStack.top()); this->__valueStack.pop();
+		auto leftNode = Transtion(ASTExpNode*, this->__valueStack.top()); this->__valueStack.pop();
 		expNode->setLeft(leftNode);
 		expNode->setRight(rightNode);
 		this->__valueStack.push(expNode);
 	}
-	else if (AST_VALUE_OPERATOR == type || AST_BOOL_OPERATOR == type)
+	else if (AST_VALUE_OPERATOR == type || AST_BOOL_OPERATOR == type)  // 运算节点
 	{
 		auto expNode = Transtion(ASTOperatorNode*, item);
 		// 数值运算中，考虚+ - * /之间的优先级
@@ -145,14 +177,32 @@ int UnUCompiler::Semantic::merge(Word word)
 		}
 		else { this->__valueStack.push(expNode); }
 	}
-	else if (AST_BODY == type)
+	else if (AST_OUTPUT == type)  // 输出节点
+	{
+		auto expNode = Transtion(ASTOutputNode*, item);
+		// 输出语句要求后面为表达式
+		auto outExp = Transtion(ASTExpNode*, this->__valueStack.top()); this->__valueStack.pop();
+		expNode->setOutContent(outExp);
+		// 将该节点作为运算做放回数值栈
+		this->__valueStack.push(expNode);
+	}
+	else if (AST_INPUT == type)
+	{
+		auto expNode = Transtion(ASTInputNode*, item);
+		// 输入语句后面要求为变量
+		auto inToken = Transtion(ASTTokenNode*, this->__valueStack.top()); this->__valueStack.pop();
+		expNode->setInput(inToken);
+		// 将该节点作为运算做放回数值栈
+		this->__valueStack.push(expNode);
+	}
+	/*else if (AST_BODY == type)
 	{
 		this->specialBracket(word);
 	}
 	else if (AST_STAND == type)
 	{
 		this->__valueStack.push(CreateASTNode(ASTStandNode*, "stand", AST_STAND));
-	}
+	}*/
 	else if (AST_ASSIGN == type)  // 赋值节点
 	{
 		auto expNode = Transtion(ASTAssignNode*, item);
@@ -161,7 +211,7 @@ int UnUCompiler::Semantic::merge(Word word)
 		
 		if (AST_INTEGER == rightNode->getValueType())
 		{
-			leftNode->setValue(XpLib::Toolsets::intToStr(Transtion(ASTIntegerNode*, rightNode)->getValue()));
+			leftNode->setRealValue(XpLib::Toolsets::intToStr(Transtion(ASTIntegerNode*, rightNode)->getValue()));
 			leftNode->setType(AST_INTEGER);
 			this->__valueStack.push(leftNode);
 			expNode->setRight(rightNode);
@@ -169,7 +219,7 @@ int UnUCompiler::Semantic::merge(Word word)
 		}
 		else if (AST_FLOAT == rightNode->getValueType())
 		{
-			leftNode->setValue(XpLib::Toolsets::doubleToStr(Transtion(ASTFloatNode*, rightNode)->getValue()));
+			leftNode->setRealValue(XpLib::Toolsets::doubleToStr(Transtion(ASTFloatNode*, rightNode)->getValue()));
 			leftNode->setType(AST_FLOAT);
 			this->__valueStack.push(leftNode);
 			expNode->setRight(rightNode);
@@ -177,7 +227,7 @@ int UnUCompiler::Semantic::merge(Word word)
 		}
 		else if (AST_STRING == rightNode->getValueType())
 		{
-			leftNode->setValue(Transtion(ASTStringNode*, rightNode)->getValue());
+			leftNode->setRealValue(Transtion(ASTStringNode*, rightNode)->getValue());
 			leftNode->setType(AST_STRING);
 			this->__valueStack.push(leftNode);
 			expNode->setRight(rightNode);
@@ -202,10 +252,10 @@ int UnUCompiler::Semantic::merge(Word word)
 		return Semantic::FAILED;
 	}
 	// 括号类操作符要做特殊处理，在符号栈中添加标记
-	if ("}" == word.getWord())
-	{
-		this->__valueStack.push(CreateASTNode(ASTStandNode*, "stand", AST_STAND));
-	}
+	// if ("}" == word.getWord())
+	// {
+	//	this->__valueStack.push(CreateASTNode(ASTStandNode*, "stand", AST_STAND));
+	// }
 	return Semantic::CONTINUE;
 }
 
@@ -225,6 +275,8 @@ int UnUCompiler::Semantic::reduction(Word word)
 				break;
 			expPower = PowerTable::getPowerByKey(this->__operatorStack.top()->getValueType());
 			wordPower = PowerTable::getPowerByKey(word.getWord());
+			if (-1 == wordPower)
+				wordPower = PowerTable::getPowerByKey(word.getWordValue());
 			if (wordPower > expPower)
 				break;
 		}
@@ -282,7 +334,7 @@ ASTNode * UnUCompiler::Semantic::calculation(ASTNode * node)
 	auto rightNode = expNode->getRight();
 	if (SUCCESS == expNode->check() && AST_TOKEN != leftNode->getValueType() && AST_TOKEN != rightNode->getValueType())
 	{
-		if (AST_INTEGER == leftNode->getValueType())
+		if (AST_INTEGER == leftNode->getValueType() && AST_INTEGER == rightNode->getValueType())
 		{
 			int result;
 			if ("+" == expNode->getOperator())
@@ -315,7 +367,7 @@ ASTNode * UnUCompiler::Semantic::calculation(ASTNode * node)
 			}
 			CALCULATION(XpLib::Toolsets::intToStr(result), AST_INTEGER);
 		}
-		else if (AST_FLOAT == leftNode->getValueType())
+		else if (AST_FLOAT == leftNode->getValueType() && AST_FLOAT == rightNode->getValueType())
 		{
 			double result;
 			if ("+" == expNode->getOperator())
@@ -348,7 +400,7 @@ ASTNode * UnUCompiler::Semantic::calculation(ASTNode * node)
 			}
 			CALCULATION(XpLib::Toolsets::doubleToStr(result), AST_FLOAT);
 		}
-		else if (AST_STRING == leftNode->getValueType())
+		else if (AST_STRING == leftNode->getValueType() && AST_STRING == rightNode->getValueType())
 		{
 			std::string result = "\"";
 			if ("+" == expNode->getOperator())

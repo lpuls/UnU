@@ -11,6 +11,8 @@
 #include "ASTParamNode.h"
 #include "ASTFunctionNode.h"
 #include "ASTStandNode.h"
+#include "ASTOutputNode.h"
+#include "ASTInputNode.h"
 
 #include "../../Toolsets.h"
 #include "../UnUCompile.h"
@@ -89,6 +91,16 @@ ASTNode * UnUCompiler::ASTNodeCreater::create(std::string word, std::string word
 	else if (AST_STAND == wordValue)  // 用来生成标记节点
 	{
 		auto result = new ASTStandNode();
+		return result;
+	}
+	else if (AST_OUTPUT == wordValue)  // 生成输出节点
+	{
+		auto result = new ASTOutputNode();
+		return result;
+	}
+	else if (AST_INPUT == wordValue)  // 生成输入节点
+	{
+		auto result = new ASTInputNode();
 		return result;
 	}
 	return nullptr;

@@ -23,6 +23,13 @@ namespace UnUCompiler
 		*/
 		ASTTokenNode();
 
+		/*
+		* 功能：变量中存放的真正的值
+		* 类型：std::String，该值用字符串表达
+		* 描述：无
+		*/
+		DEFINE_PROTECTED(std::string, _realValue, RealValue);
+
 	public:
 		/*
 		* 功能：析构函数

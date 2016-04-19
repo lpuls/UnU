@@ -65,7 +65,7 @@ namespace UnUCompiler
 		void setValue(T value);
 
 		/*
-		* 功能：获取数值
+		* 功能：获取数值类型
 		* 参数：无
 		* 返回：T
 		* 描述：无
@@ -73,8 +73,8 @@ namespace UnUCompiler
 		std::string getType();
 
 		/*
-		* 功能：设置数值
-		* 参数：T, 要设置的数值
+		* 功能：设置数值类型
+		* 参数：std::string，数值类型
 		* 返回：无
 		* 描述：无
 		*/

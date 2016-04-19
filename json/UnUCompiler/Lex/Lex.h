@@ -58,6 +58,14 @@ namespace UnUCompiler
 		*/
 		~Lex();
 
+		/*
+		* 功能：清理词汇迭代器
+		* 参数：无
+		* 返回：无
+		* 描述：无
+		*/
+		void clearWordIterator();
+
 	protected:
 		/*
 		* 功能：进入动作

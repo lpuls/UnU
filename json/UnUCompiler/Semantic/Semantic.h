@@ -43,7 +43,7 @@ namespace UnUCompiler
 		* ∑µªÿ£∫ASTNode*
 		* √Ë ˆ£∫Œﬁ
 		*/
-		ASTNode* analysis(WordIterator wordIterator);
+		ASTNode* analysis(WordIterator wordIterator, unsigned int start, unsigned int end);
 
 	private:
 		/*

@@ -13,7 +13,7 @@ UnUCompiler::ASTStructNode::~ASTStructNode()
 int UnUCompiler::ASTStructNode::check()
 {
 	// 先检测左子树是否为Bool表达式
-	if (this->_left->getIsBool())
+	if (this->_left)
 	{
 		auto result = this->_left->check();
 		if (SUCCESS == result)

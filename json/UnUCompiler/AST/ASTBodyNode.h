@@ -60,6 +60,22 @@ namespace UnUCompiler
 		void addChild(ASTNode * child);
 
 		/*
+		* 功能：根据下标得到对应的孩子节点
+		* 参数：unsigned int， 节点的下标
+		* 返回：ASTNode*，下标对应的节点
+		* 描述：无
+		*/
+		ASTNode* getChild(unsigned int location);
+
+		/*
+		* 功能：获取子节点总数
+		* 参数：无
+		* 返回：int，子节点总数
+		* 描述：无
+		*/
+		unsigned int getChildTotal();
+
+		/*
 		* 功能：检查方法
 		* 参数：无
 		* 返回：int，检查结果

@@ -37,6 +37,8 @@ namespace UnUCompiler
 	const std::string AST_LOOP = "WHILE";
 	const std::string AST_FUNCTION = "FUHTION";
 	const std::string AST_PARAMS = "spearated";
+	const std::string AST_OUTPUT = "OUTPUT";
+	const std::string AST_INPUT = "INPUT";
 
 	// 语义分析时返回的结果
 	const std::string PowerTablePath = JsonPath + "/PowerTable.json";

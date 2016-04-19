@@ -23,7 +23,7 @@ namespace UnUCompiler
 		* 类型：ASTOperatorNode*
 		* 描述：无
 		*/
-		DEFINE_PROTECTED(ASTOperatorNode*, _left, Left);
+		DEFINE_PROTECTED(ASTExpNode*, _left, Left);
 
 		/*
 		* 功能：运行结构

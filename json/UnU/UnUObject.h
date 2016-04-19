@@ -35,7 +35,7 @@ namespace UnU
 		* 返回：无
 		* 描述：虚函数
 		*/
-		void print();
+		virtual void print();
 
 		/*
 		* 功能：复制方法
@@ -43,7 +43,15 @@ namespace UnU
 		* 返回：复制的结果
 		* 描述：无
 		*/
-		UnUObject* copy();
+		virtual UnUObject* copy();
+
+		/*
+		* 功能：运行代码
+		* 参数：无
+		* 返回：无
+		* 描述：无
+		*/
+		virtual int run();
 
 	protected:
 		/*

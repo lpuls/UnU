@@ -67,12 +67,14 @@ XpLib::StateMachine::~StateMachine()
 }
 
 int XpLib::StateMachine::run()
-{   
+{
+	this->_current = this->_stateTable->getStarState();
 	if (0 >= this->_inputList->size())
 	{
 		STATELOG("ÎÞºÎÊäÈë");
 		return StateMachine::SUCCESS;
 	}
+	this->_location = 0;
 	bool isContinue = true;
 	int result = -1;
 	while (isContinue)

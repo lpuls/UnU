@@ -20,6 +20,11 @@ UnUCompiler::Lex::~Lex()
 	StateMachine::~StateMachine();
 }
 
+void UnUCompiler::Lex::clearWordIterator()
+{
+	this->__iterator.clear();
+}
+
 int UnUCompiler::Lex::entry__()
 {
 	return StateMachine::entry__();
@@ -32,12 +37,11 @@ int UnUCompiler::Lex::quit__()
 	{
 		if (" " != this->_input)
 			this->_location -= 1;
-		if ("\"" == this->_input && 0 != this->__currentWord.length())
+		if ("\"" == this->_input && "string" == this->_current->getState())
 		{
 			this->__currentWord += "\"";
 			this->_location += 1;
 		}
-		LEXLOG("终端节点：" + this->_current->getState() + " 节点词汇：" + this->__currentWord + "\n");
 		// 将记录下来的字符串转化为词汇
 		Word word;
 		auto result = this->__keyWordsTable.at(this->__currentWord);
@@ -45,11 +49,12 @@ int UnUCompiler::Lex::quit__()
 			word = Word(this->__currentWord, this->_current->getState());
 		else
 			word = Word(this->__currentWord, result);
+		LEXLOG("终端节点：" + word.getWordValue() + " 节点词汇：" + word.getWord() + "\n");
 		this->__iterator.push(word);
 		this->__currentWord = "";
 		this->_current = this->_stateTable->getStarState();
 	}
-	else if (" " != this->_input)
+	else if (" " != this->_input || "string_mid" == this->_current->getState())
 	{
 		this->__currentWord += this->_input;
 	}

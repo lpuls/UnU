@@ -10,7 +10,7 @@
 
 namespace UnUCompiler
 {
-	class ASTIntegerNode : public ASTValueNode<int>
+	class ASTIntegerNode : public ASTValueNode<long long int>
 	{
 		friend class ASTNodeCreater;
 	public:	
